@@ -12,6 +12,7 @@ function shuffleArray(array) {
   return array;
 }
 
+
 // Fetch quiz data from the published CSV link
 async function fetchQuizData() {
   const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSaajKOiG4ebCh0NkZEeugD6F9xj8WDpBOV3Ow3v01HxGYWDf3u8uWxaLOCvX2Izw4wDPeIi0I8evKw/pub?output=csv";
@@ -27,6 +28,7 @@ async function fetchQuizData() {
       options: row.slice(1, 5), // Get options from columns B to E
       correct: parseInt(row[5], 10) - 1 // Adjust for 0-based index
     }));
+    document.getElementById("preloader").style.display = "none";
 
     // Shuffle the quiz questions before loading them
     quizData = shuffleArray(quizData);
