@@ -1,0 +1,157 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  height: 100vh;
+  margin: 0;
+}
+
+
+#quiz-container {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+}
+
+
+#quiz-container .h1{
+  margin: 100px;
+}
+  .navbar {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: #592d2b; /* Navbar background color */
+            color: #ffffef;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            
+        }
+
+        .navbar img {
+            width: 40px;
+            margin-right: 10px;
+        }
+
+        .navbar h2 {
+            font-size: 20px;
+        }
+  h1 {
+  text-align: center; /* Center the heading horizontally */
+  font-size: 24px; /* Adjust the font size as needed */
+  font-weight: bold; /* Make the heading bold */
+  margin: 20px 0; /* Add space above and below the heading */
+  color: #333; /* You can adjust the color as needed */
+}
+  #question {
+  text-align: center; /* Center the text horizontally */
+  font-size: 18px; /* Adjust the font size as needed */
+  font-weight: bold; /* Make the question bold */
+  margin: 20px 0; /* Add some space above and below the question */
+}      
+
+.answer-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0;
+  background-color: #a09386;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.answer-btn.correct {
+  background-color: rgb(3, 86, 3);
+}
+
+.answer-btn.wrong {
+  background-color: rgb(191, 4, 4);
+}
+
+#next-btn {
+  display: none;
+  padding: 10px 20px;
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 335px;
+}
+
+
+
+  /* General container styles */
+  #result-container {
+    display: none; /* Initially hidden */
+    text-align: center;
+    padding: 20px;
+    margin: 50px auto;
+    max-width: 500px;
+    background-color: #f3f4f6; /* Light gray background */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  #result-container h2 {
+    color: #333;  /* Darker text color */
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+
+  #score {
+    color: #28a745;  /* Green color for score */
+    font-size: 22px;
+    font-weight: bold;
+  }
+
+  #result-container button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #a09386;  /* Blue button */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  #result-container button:hover {
+    background-color: #592d2b;  /* Darker blue on hover */
+  }
+  
+  #quiz-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0px;
+}
+
+#question-number {
+  font-size: 15px; /* Same font size as the timer */
+  font-weight: bold; /* Bold text */
+  color: #fff; /* Same text color */
+  background-color: #a09386; /* Same background color */
+  padding: 10px 15px; /* Same padding */
+  border-radius: 5px; /* Same rounded corners */
+  margin-left: 10px; /* Some space from the left edge */
+}
+
+#timer {
+  font-size: 15px; /* Font size */
+  font-weight: bold; /* Bold text */
+  color: #fff; /* Text color */
+  background-color: #a09386; /* Background color */
+  padding: 10px 15px; /* Padding around the text */
+  border-radius: 5px; /* Rounded corners */
+  margin-right: 10px; /* Space from the right edge */
+}
+
+/* Change background color when time is running low */
+#timer.warning {
+  background-color: #FF4136; /* Red color */
+}

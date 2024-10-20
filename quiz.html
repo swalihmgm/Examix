@@ -1,0 +1,43 @@
+<!DOCTYPE html><!--  -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+      <img src="20241019_152445.png" alt="Logo"> <!-- Replace with your logo -->
+      <h2>examix</h2>
+    </div>
+    <div id="quiz-header">
+      <p id="question-number"></p>
+      <p id="timer"></p>
+    </div>
+   <div class="quiz">
+  <div id="quiz-container">
+    <h1>العروض والقوافي</h1>
+    <div id="question-container">
+      <p id="question"></p>
+      <div id="answers">
+        <button class="answer-btn" onclick="checkAnswer(this, 0)">Option 1</button>
+        <button class="answer-btn" onclick="checkAnswer(this, 1)">Option 2</button>
+        <button class="answer-btn" onclick="checkAnswer(this, 2)">Option 3</button>
+        <button class="answer-btn" onclick="checkAnswer(this, 3)">Option 4</button>
+      </div>
+    </div>
+    <button id="next-btn" onclick="nextQuestion()">Next Question</button>
+    
+  </div>
+   </div>
+  <div id="result-container" style="display: none;">
+  <h2>Quiz Completed!</h2>
+  <p id="score"></p>
+  <button onclick="location.reload()">Restart</button>
+</div>
+
+  <script src="quiz.js"></script>
+</body>
+</html>
