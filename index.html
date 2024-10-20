@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Web Page</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            
+            
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FAF9F6;
+            
+        }
+        a {
+            text-decoration : none;
+        }
+        /* Navbar styling */
+        .navbar {
+  display: flex;
+  justify-content: space-between; /* Ensure space between logo and icon */
+  align-items: center;
+  padding: 10px;
+  background-color: #592d2b;
+  color: #ffffef;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar img {
+  width: 50px; /* Size of the icons */
+  height: 50px; /* Ensure both icons are the same size */
+}
+
+.navbar h2 {
+  font-size: 20px;
+  flex-grow: 1; /* Pushes h2 to the center */
+  text-align: center; /* Center the text */
+}
+
+#nav-icon {
+  width: 50px; /* Same size as the left logo */
+  cursor: pointer; /* Change cursor to pointer on hover */
+}
+
+        /* Main content */
+        .main {
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: start;
+            height: 100vh;
+        }
+
+        /* Card styling */
+        .card-container {
+            display: flex;
+            justify-content: space-around;
+            
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background-color: #333;
+            border-radius: 6px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 160px;
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.3s;
+            color: white;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        /* Card content */
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            margin: 5px 0;
+            color: #ffffef;
+            text-align: start;
+            padding-left: 6px;
+        }
+
+        /* Special color coding */
+        .subject {
+            background-color: #ffffef;
+            border-radius: 5px;
+            padding: 5px;
+            color: #592d2b;
+        }
+
+        .marks, .time {
+            color: #ff6b6b;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .card-container {
+                flex-direction: column;
+            }
+
+            .card {
+                width: 350px;
+            }
+        }
+        
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <div class="navbar">
+     <img src="20241020_171328.png" alt="Logo"> <!-- Left logo -->
+     <h2>examix</h2>
+     <img id="nav-icon" src="20241020_171143.png" alt="Menu Icon"> <!-- Right nav icon -->
+    </div>
+
+    <!-- Main body -->
+    <div class="main">
+        <div class="card-container">
+            <!-- Card 1 -->
+            <a class="link" href="quiz.html"><div class="card">
+                <h2 class="subject">Meter And Rhyme</h2>
+                <p>Total Questions: <strong>50</strong></p>
+                <p class="marks">Total Marks: <strong>50</strong></p>
+                <p class="time">Time: <strong>1 hours</strong></p>
+            </div></a>
+
+            <!-- Card 2 -->
+            <div class="card">
+                <h2 class="subject">Research Methodology</h2>
+                <p>Total Questions: <strong>80</strong></p>
+                <p class="marks">Total Marks: <strong>100</strong></p>
+                <p class="time">Time: <strong>3 hours</strong></p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
