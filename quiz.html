@@ -7,11 +7,24 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Preloader -->
+<div id="preloader">
+  <div id="loader-content">
+    <img src="20241020_171328.png" alt="Loading Icon" id="loader-icon">
+    <p>Loading questions...</p>
+  </div>
+</div>
+
+<!-- Main content (hidden initially) -->
+<div id="main-content" style="display: none;">
+  <!-- Your quiz content goes here -->
+</div>
     <!-- Navbar -->
     <div class="navbar">
-      <img src="20241019_152445.png" alt="Logo"> <!-- Replace with your logo -->
-      <h2>examix</h2>
-    </div>
+  <img src="20241020_171328.png" alt="Logo"> <!-- Left logo -->
+  <h2>examix</h2>
+  <img id="nav-icon" src="20241020_171143.png" alt="Menu Icon"> <!-- Right nav icon -->
+</div>
     <div id="quiz-header">
       <p id="question-number"></p>
       <p id="timer"></p>
