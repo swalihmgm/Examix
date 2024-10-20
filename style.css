@@ -1,3 +1,31 @@
+/* Preloader Styles */
+#preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #592d2b; /* Full black background */
+  z-index: 9999; /* High z-index to appear on top */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+#loader-content {
+  text-align: center;
+}
+
+#loader-icon {
+  width: 100px; /* Adjust the size of your loading icon */
+  margin-bottom: 20px;
+}
+
+#preloader p {
+  font-size: 20px; /* Adjust the text size */
+  font-weight: bold;
+} 
 body {
   font-family: Arial, sans-serif;
   background-color: #f4f4f4;
@@ -18,25 +46,33 @@ body {
   margin: 100px;
 }
   .navbar {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            background-color: #592d2b; /* Navbar background color */
-            color: #ffffef;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            
-        }
+  display: flex;
+  justify-content: space-between; /* Ensure space between logo and icon */
+  align-items: center;
+  padding: 10px;
+  background-color: #592d2b;
+  color: #ffffef;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
 
-        .navbar img {
-            width: 40px;
-            margin-right: 10px;
-        }
+.navbar img {
+  width: 50px; /* Size of the icons */
+  height: 50px; /* Ensure both icons are the same size */
+}
 
-        .navbar h2 {
-            font-size: 20px;
-        }
+.navbar h2 {
+  font-size: 20px;
+  flex-grow: 1; /* Pushes h2 to the center */
+  text-align: center; /* Center the text */
+}
+
+#nav-icon {
+  width: 50px; /* Same size as the left logo */
+  cursor: pointer; /* Change cursor to pointer on hover */
+}
+
   h1 {
   text-align: center; /* Center the heading horizontally */
   font-size: 24px; /* Adjust the font size as needed */
@@ -56,7 +92,7 @@ body {
   width: 100%;
   padding: 10px;
   margin: 5px 0;
-  background-color: #a09386;
+  background-color: #333;
   color: white;
   border: none;
   border-radius: 5px;
@@ -75,12 +111,12 @@ body {
 #next-btn {
   display: none;
   padding: 10px 20px;
-  background-color: #333;
+  background-color: #592d2b;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  margin-left: 335px;
+  
 }
 
 
@@ -135,7 +171,7 @@ body {
   font-size: 15px; /* Same font size as the timer */
   font-weight: bold; /* Bold text */
   color: #fff; /* Same text color */
-  background-color: #a09386; /* Same background color */
+  background-color: #592d2b; /* Same background color */
   padding: 10px 15px; /* Same padding */
   border-radius: 5px; /* Same rounded corners */
   margin-left: 10px; /* Some space from the left edge */
@@ -145,7 +181,7 @@ body {
   font-size: 15px; /* Font size */
   font-weight: bold; /* Bold text */
   color: #fff; /* Text color */
-  background-color: #a09386; /* Background color */
+  background-color: #592d2b; /* Background color */
   padding: 10px 15px; /* Padding around the text */
   border-radius: 5px; /* Rounded corners */
   margin-right: 10px; /* Space from the right edge */
