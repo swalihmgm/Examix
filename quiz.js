@@ -12,7 +12,6 @@ function shuffleArray(array) {
   return array;
 }
 
-
 // Fetch quiz data from the published CSV link
 async function fetchQuizData() {
   const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSaajKOiG4ebCh0NkZEeugD6F9xj8WDpBOV3Ow3v01HxGYWDf3u8uWxaLOCvX2Izw4wDPeIi0I8evKw/pub?output=csv";
@@ -69,7 +68,7 @@ function endQuiz() {
 }
 
 // Load the current question
-function loadQuestion() {
+function loadQuestion(isPrevious = false) {
   if (quizData.length === 0) {
     alert("No questions found. Please add questions first!");
     window.location.href = "form.html"; // Optional: redirect if no questions
@@ -86,10 +85,24 @@ function loadQuestion() {
     button.textContent = quizData[currentQuestion].options[index];
     button.classList.remove("correct", "wrong");
     button.disabled = false;
+
+    // If viewing a previous question, disable the buttons to prevent changes
+    if (isPrevious) {
+      button.disabled = true;
+
+      // Highlight the selected answer
+      if (index === quizData[currentQuestion].correct) {
+        button.classList.add("correct");
+      } else {
+        button.classList.add("wrong");
+      }
+    }
   });
 
   questionNumberElement.textContent = `Question ${currentQuestion + 1} of ${quizData.length}`;
 
+  // Show or hide the Previous button based on the current question
+  document.getElementById("prev-btn").style.display = currentQuestion > 0 ? "block" : "none";
   document.getElementById("next-btn").style.display = "none";
 }
 
@@ -123,6 +136,22 @@ function nextQuestion() {
   }
 }
 
+// Function to go back to the previous question
+function prevQuestion() {
+  if (currentQuestion > 0) {
+    currentQuestion--; // Go to the previous question
+    loadQuestion(true); // Pass 'true' to indicate viewing the previous question
+  }
+
+  // Hide 'Previous' button on the first question
+  if (currentQuestion === 0) {
+    document.getElementById("prev-btn").style.display = "none";
+  }
+
+  // Ensure the 'Next' button is visible
+  document.getElementById("next-btn").style.display = "block";
+}
+
 // Show results at the end of the quiz
 function showResults() {
   document.getElementById("quiz-container").style.display = "none";
@@ -143,4 +172,4 @@ function showResults() {
 }
 
 // Call fetchQuizData on window load to retrieve questions
-window.onload = fetchQuizData; // Changed from loadQuestion to fetchQuizData
+window.onload = fetchQuizData;
