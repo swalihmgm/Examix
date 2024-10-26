@@ -1,0 +1,58 @@
+<!DOCTYPE html><!--  -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>examix</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Preloader -->
+<div id="preloader">
+  <div id="loader-content">
+    <img src="20241020_171328.png" alt="Loading Icon" id="loader-icon">
+    <p>Loading questions...</p>
+  </div>
+</div>
+
+<!-- Main content (hidden initially) -->
+<div id="main-content" style="display: none;">
+  <!-- Your quiz content goes here -->
+</div>
+    <!-- Navbar -->
+    <div class="navbar">
+  <img src="20241020_171328.png" alt="Logo"> <!-- Left logo -->
+  <h2>examix</h2>
+  <img id="nav-icon" src="20241020_171143.png" alt="Menu Icon"> <!-- Right nav icon -->
+</div>
+    <div id="quiz-header">
+      <p id="question-number"></p>
+      <p id="timer"></p>
+    </div>
+   <div class="quiz">
+  <div id="quiz-container">
+    <h1>العروض والقوافي</h1>
+    <div id="question-container">
+      <p id="question"></p>
+      <div id="answers">
+        <button class="answer-btn" onclick="checkAnswer(this, 0)">Option 1</button>
+        <button class="answer-btn" onclick="checkAnswer(this, 1)">Option 2</button>
+        <button class="answer-btn" onclick="checkAnswer(this, 2)">Option 3</button>
+        <button class="answer-btn" onclick="checkAnswer(this, 3)">Option 4</button>
+      </div>
+    </div>
+    <div id="navigation-buttons">
+  <button id="prev-btn" onclick="prevQuestion()" style="display: none;">Previous Question</button>
+  <button id="next-btn" onclick="nextQuestion()">Next Question</button>
+</div>
+  </div>
+   </div>
+  <div id="result-container" style="display: none;">
+  <h2>Quiz Completed!</h2>
+  <p id="score"></p>
+  <button onclick="location.reload()">Restart</button>
+</div>
+
+  <script src="tfqh.js"></script>
+</body>
+</html>
