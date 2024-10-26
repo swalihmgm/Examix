@@ -1,7 +1,7 @@
 let quizData = JSON.parse(localStorage.getItem("quizData")) || [];
 let currentQuestion = 0;
 let score = 0;  // Initialize score
-let timeRemaining = 3600; // 1 hour in seconds (3600 seconds)
+let timeRemaining = 7200; // 1 hour in seconds (3600 seconds)
 
 // Fisher-Yates Shuffle Algorithm
 function shuffleArray(array) {
