@@ -29,7 +29,7 @@
   justify-content: space-between; /* Ensure space between logo and icon */
   align-items: center;
   padding: 10px;
-  background-color: #592d2b;
+  background-color: #764ba2;
   color: #ffffef;
   position: sticky;
   top: 0;
@@ -202,6 +202,14 @@
         }
         
     </style>
+
+    <script>
+  if (!localStorage.getItem("loggedIn")) {
+    window.location.href = "login.html";
+  }
+</script>
+
+
 </head>
 <body>
 
