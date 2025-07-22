@@ -33,6 +33,16 @@
             top: 0;
             z-index: 1000;
             box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+            width: 100%;
+        }
+
+        /* Navbar container for larger screens */
+        @media (min-width: 415px) {
+            .navbar {
+                max-width: 414px;
+                margin: 0 auto;
+                border-radius: 0 0 15px 15px;
+            }
         }
 
         .navbar img {
@@ -70,6 +80,16 @@
             overflow: hidden;
         }
 
+        /* Quiz header for timer and question number */
+        #quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+        }
         #quiz-container, #result-container {
             background: linear-gradient(135deg, #5F9EA0 0%, #2F4F4F 100%);
             margin: 20px;
@@ -218,7 +238,7 @@
             background: linear-gradient(135deg, #000000, #2F4F4F);
             padding: 8px 15px;
             border-radius: 20px;
-            margin-left: 10px;
+            margin: 0;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
 
@@ -229,7 +249,7 @@
             background: linear-gradient(135deg, #000000, #2F4F4F);
             padding: 8px 15px;
             border-radius: 20px;
-            margin-right: 10px;
+            margin: 0;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
         
@@ -388,8 +408,10 @@
 
     <!-- Quiz Container -->
     <div class="question" id="quiz-container" style="display: none;">
-      <div  style="text-align: left; float:left;" id="timer">60m 0s</div>
-      <h2  style="font-size: 16px; text-align: right;" id="question-number"></h2>
+      <div id="quiz-header">
+        <div id="timer">60m 0s</div>
+        <div id="question-number"></div>
+      </div>
       <p style="text-align: center; padding: 25px; font-size: large;" id="question"></p>
       <button class="answer-btn"></button>
       <button class="answer-btn"></button>
