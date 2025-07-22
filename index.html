@@ -16,7 +16,8 @@
 
         body {
             font-family: Arial, sans-serif;
-            background-color: #FAF9F6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             
         }
         a {
@@ -57,66 +58,146 @@
             display: flex;
             justify-content: center;
             align-items: start;
-            height: 100vh;
+            min-height: calc(100vh - 70px);
         }
 
         /* Card styling */
         .card-container {
-            display: flex;
-            justify-content: space-around;
-            
-            gap: 10px;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            width: 100%;
         }
 
         .card {
-            background-color: #ffffef;
-            border-radius: 6px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 160px;
-            padding: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 30px 25px;
             text-align: center;
-            transition: transform 0.3s;
+            transition: all 0.3s ease;
             color: #333;
+            position: relative;
+            overflow: hidden;
         }
 
         .card:hover {
-            transform: scale(1.05);
+            transform: translateY(-8px);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        /* Subject icon styling */
+        .subject-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
         }
 
         /* Card content */
         .card h2 {
-            font-size: 18px;
-            margin-bottom: 10px;
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #2d3748;
+            font-weight: 600;
+            line-height: 1.3;
         }
 
         .card p {
-            margin: 5px 0;
-            color: #333;
-            text-align: start;
-            padding-left: 6px;
+            margin: 8px 0;
+            color: #4a5568;
+            text-align: left;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        /* Special color coding */
-        .subject {
-            background-color: #592d2b;
-            border-radius: 5px;
-            padding: 5px;
-            color: #ffffef;
+        .card p .label {
+            font-weight: 500;
+            color: #2d3748;
         }
 
-        .marks, .time {
-            color: #333;
+        .card p .value {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        /* Info row styling */
+        .info-row {
+            display: flex;
+            align-items: center;
+            margin: 12px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            color: #667eea;
+            font-size: 16px;
+        }
+
+        /* Start button */
+        .start-btn {
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            font-size: 14px;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
         }
 
         /* Responsive */
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
             .card-container {
-                flex-direction: column;
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 0 10px;
             }
 
             .card {
-                width: 350px;
+                padding: 25px 20px;
+            }
+
+            .main {
+                padding: 15px;
             }
         }
         
@@ -135,38 +216,99 @@
     <div class="main">
         <div class="card-container">
             
-            <!-- Card 4 -->
-            <a class="link" href="./pg/adb.html"><div class="card">
-                <h2 class="subject">History of Litrature</h2>
-                <p>Total Questions: <strong>100</strong></p>
-                <p class="marks">Total Marks: <strong>100</strong></p>
-                <p class="time">Time: <strong>1 hours</strong></p>
-            </div></a>
-
-
-            <!-- Card 1 -->
-            <a class="link" href="quiz.html"><div class="card">
-                <h2 class="subject">Meter And Rhyme</h2>
-                <p>Total Questions: <strong>50</strong></p>
-                <p class="marks">Total Marks: <strong>50</strong></p>
-                <p class="time">Time: <strong>1 hours</strong></p>
-            </div></a>
-
-            <!-- Card 2 -->
+            <!-- History of Literature Card -->
             <div class="card">
-                <h2 class="subject">Research Methodology</h2>
-                <p>Total Questions: <strong>80</strong></p>
-                <p class="marks">Total Marks: <strong>100</strong></p>
-                <p class="time">Time: <strong>3 hours</strong></p>
+                <div class="subject-icon">📚</div>
+                <h2>History of Literature</h2>
+                <div class="info-row">
+                    <span class="info-icon">❓</span>
+                    <span class="label">Total Questions:</span>
+                    <span class="value">100</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-icon">🎯</span>
+                    <span class="label">Total Marks:</span>
+                    <span class="value">100</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-icon">⏱️</span>
+                    <span class="label">Duration:</span>
+                    <span class="value">1 hour</span>
+                </div>
+                <a href="./pg/adb.html" style="text-decoration: none;">
+                    <button class="start-btn">Start Quiz</button>
+                </a>
+            </div>
+
+            <!-- Meter And Rhyme Card -->
+            <div class="card">
+                <div class="subject-icon">🎵</div>
+                <h2>Meter And Rhyme</h2>
+                <div class="info-row">
+                    <span class="info-icon">❓</span>
+                    <span class="label">Total Questions:</span>
+                    <span class="value">50</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-icon">🎯</span>
+                    <span class="label">Total Marks:</span>
+                    <span class="value">50</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-icon">⏱️</span>
+                    <span class="label">Duration:</span>
+                    <span class="value">1 hour</span>
+                </div>
+                <a href="quiz.html" style="text-decoration: none;">
+                    <button class="start-btn">Start Quiz</button>
+                </a>
+            </div>
+
+            <!-- Research Methodology Card -->
+            <div class="card">
+                <div class="subject-icon">🔬</div>
+                <h2>Research Methodology</h2>
+                <div class="info-row">
+                    <span class="info-icon">❓</span>
+                    <span class="label">Total Questions:</span>
+                    <span class="value">80</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-icon">🎯</span>
+                    <span class="label">Total Marks:</span>
+                    <span class="value">100</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-icon">⏱️</span>
+                    <span class="label">Duration:</span>
+                    <span class="value">3 hours</span>
+                </div>
+                <button class="start-btn" disabled style="opacity: 0.6; cursor: not-allowed;">Coming Soon</button>
             </div>
             
-            <!-- Card 3 -->
-            <a class="link" href="tfqh.html"><div class="card">
-                <h2 class="subject">Thareehul Fiqh</h2>
-                <p>Total Questions: <strong>200</strong></p>
-                <p class="marks">Total Marks: <strong>100</strong></p>
-                <p class="time">Time: <strong>2 hours</strong></p>
-            </div></a>
+            <!-- Thareehul Fiqh Card -->
+            <div class="card">
+                <div class="subject-icon">📖</div>
+                <h2>Thareehul Fiqh</h2>
+                <div class="info-row">
+                    <span class="info-icon">❓</span>
+                    <span class="label">Total Questions:</span>
+                    <span class="value">200</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-icon">🎯</span>
+                    <span class="label">Total Marks:</span>
+                    <span class="value">100</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-icon">⏱️</span>
+                    <span class="label">Duration:</span>
+                    <span class="value">2 hours</span>
+                </div>
+                <a href="tfqh.html" style="text-decoration: none;">
+                    <button class="start-btn">Start Quiz</button>
+                </a>
+            </div>
             
         </div>
     </div>
