@@ -1,317 +1,515 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>examix</title>
     <link rel="icon" href="20241021_114020.jpg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
+        :root {
+            --primary: #8B5CF6;
+            --primary-dark: #6D28D9;
+            --accent: #06B6D4;
+            --bg-dark: #0F172A;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-shine: rgba(255, 255, 255, 0.05);
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            
-            
+            -webkit-font-smoothing: antialiased;
         }
 
         body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
             min-height: 100vh;
-            
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(circle at 0% 0%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(6, 182, 212, 0.15) 0%, transparent 50%);
+            background-attachment: fixed;
         }
+
+        /* Animated Background Blobs */
+        .blob {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            filter: blur(80px);
+            border-radius: 50%;
+            z-index: -1;
+            opacity: 0.15;
+            animation: move 20s infinite alternate;
+        }
+
+        .blob-1 {
+            top: -250px;
+            left: -250px;
+            animation-delay: 0s;
+        }
+
+        .blob-2 {
+            bottom: -250px;
+            right: -250px;
+            animation-delay: -5s;
+        }
+
+        @keyframes move {
+            from {
+                transform: translate(0, 0) scale(1);
+            }
+
+            to {
+                transform: translate(100px, 100px) scale(1.1);
+            }
+        }
+
         a {
-            text-decoration : none;
+            text-decoration: none;
+            color: inherit;
         }
+
         /* Navbar styling */
         .navbar {
-  display: flex;
-  justify-content: space-between; /* Ensure space between logo and icon */
-  align-items: center;
-  padding: 10px;
-  background-color: #592d2b;
-  color: #ffffef;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 5%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
 
-.navbar img {
-  width: 50px; /* Size of the icons */
-  height: 50px; /* Ensure both icons are the same size */
-}
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-.navbar h2 {
-  font-size: 20px;
-  flex-grow: 1; /* Pushes h2 to the center */
-  text-align: center; /* Center the text */
-}
+        .navbar img {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            object-fit: cover;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+        }
 
-#nav-icon {
-  width: 50px; /* Same size as the left logo */
-  cursor: pointer; /* Change cursor to pointer on hover */
-}
+        .navbar h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #fff, #94A3B8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        #nav-icon {
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            opacity: 0.8;
+        }
+
+        #nav-icon:hover {
+            transform: scale(1.1);
+            opacity: 1;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 80px 20px 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(to bottom right, #fff 10%, rgba(255, 255, 255, 0.7));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
 
         /* Main content */
         .main {
-            padding: 20px;
+            padding: 40px 5%;
             display: flex;
             justify-content: center;
-            align-items: start;
-            min-height: calc(100vh - 70px);
+            min-height: calc(100vh - 250px);
         }
 
         /* Card styling */
         .card-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            max-width: 1200px;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            max-width: 1300px;
             width: 100%;
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 30px 25px;
-            text-align: center;
-            transition: all 0.3s ease;
-            color: #333;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            padding: 40px 30px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
             position: relative;
             overflow: hidden;
         }
 
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
-        }
-
-        .card::before {
+        .card::after {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #667eea, #764ba2);
+            inset: 0;
+            background: radial-gradient(circle at top right, var(--glass-shine), transparent);
+            pointer-events: none;
+        }
+
+        .card:hover {
+            transform: translateY(-12px);
+            border-color: rgba(139, 92, 246, 0.4);
+            background: rgba(30, 41, 59, 0.9);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(139, 92, 246, 0.1);
         }
 
         /* Subject icon styling */
         .subject-icon {
-            width: 60px;
-            height: 60px;
-            margin: 0 auto 20px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border-radius: 16px;
+            width: 70px;
+            height: 70px;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(6, 182, 212, 0.2));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
-            color: white;
-            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+            font-size: 32px;
+            transition: transform 0.3s;
+        }
+
+        .card:hover .subject-icon {
+            transform: scale(1.1) rotate(5deg);
         }
 
         /* Card content */
         .card h2 {
-            font-size: 20px;
-            margin-bottom: 20px;
-            color: #2d3748;
-            font-weight: 600;
-            line-height: 1.3;
-        }
-
-        .card p {
-            margin: 8px 0;
-            color: #4a5568;
-            text-align: left;
-            font-size: 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .card p .label {
-            font-weight: 500;
-            color: #2d3748;
-        }
-
-        .card p .value {
-            font-weight: 600;
-            color: #667eea;
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            margin-bottom: 24px;
+            color: #fff;
+            font-weight: 700;
         }
 
         /* Info row styling */
         .info-row {
             display: flex;
             align-items: center;
-            margin: 12px 0;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .info-row:last-child {
+        .info-row:last-of-type {
             border-bottom: none;
+            margin-bottom: 30px;
+        }
+
+        .info-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
         }
 
         .info-icon {
-            width: 20px;
-            height: 20px;
-            margin-right: 12px;
-            color: #667eea;
             font-size: 16px;
+        }
+
+        .value {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 15px;
         }
 
         /* Start button */
         .start-btn {
-            margin-top: 20px;
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            margin-top: auto;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
             border: none;
-            border-radius: 8px;
-            font-weight: 600;
+            border-radius: 14px;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
             width: 100%;
-            font-size: 14px;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .start-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+            filter: brightness(1.1);
+        }
+
+        .start-btn:active {
+            transform: scale(0.98);
+        }
+
+        .start-btn.disabled {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            border: 1px solid var(--glass-border);
+        }
+
+        .start-btn.disabled:hover {
+            transform: none;
+            box-shadow: none;
         }
 
         /* Responsive */
         @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 36px;
+            }
+
+            .hero p {
+                font-size: 16px;
+            }
+
             .card-container {
                 grid-template-columns: 1fr;
-                gap: 20px;
-                padding: 0 10px;
             }
 
-            .card {
-                padding: 25px 20px;
-            }
-
-            .main {
-                padding: 15px;
+            .navbar {
+                padding: 15px 20px;
             }
         }
-        
     </style>
 </head>
+
 <body>
+
+    <!-- Background Decoration -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
 
     <!-- Navbar -->
     <div class="navbar">
-     <img src="20241020_171328.png" alt="Logo"> <!-- Left logo -->
-     <h2>examix</h2>
-     <img id="nav-icon" src="20241020_171143.png" alt="Menu Icon"> <!-- Right nav icon -->
+        <div class="navbar-brand">
+            <img src="20241020_171328.png" alt="Examix Logo">
+            <h2>Examix</h2>
+        </div>
+        <img id="nav-icon" src="20241020_171143.png" alt="Menu">
     </div>
 
+    <!-- Hero Section -->
+    <header class="hero">
+        <h1>Master Your Future</h1>
+        <p>Prepare for success with our curated collection of expertise-driven quizzes. Track your progress and excel in
+            your academic journey.</p>
+    </header>
+
     <!-- Main body -->
-    <div class="main">
+    <main class="main">
         <div class="card-container">
-            
+
             <!-- History of Literature Card -->
-            <div class="card">
+            <article class="card">
                 <div class="subject-icon">📚</div>
                 <h2>History of Literature</h2>
                 <div class="info-row">
-                    <span class="info-icon">❓</span>
-                    <span class="label">Total Questions:</span>
+                    <div class="info-left">
+                        <span class="info-icon">❓</span>
+                        <span>Total Questions</span>
+                    </div>
                     <span class="value">100</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-icon">🎯</span>
-                    <span class="label">Total Marks:</span>
+                    <div class="info-left">
+                        <span class="info-icon">🎯</span>
+                        <span>Total Marks</span>
+                    </div>
                     <span class="value">100</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-icon">⏱️</span>
-                    <span class="label">Duration:</span>
+                    <div class="info-left">
+                        <span class="info-icon">⏱️</span>
+                        <span>Duration</span>
+                    </div>
                     <span class="value">1 hour</span>
                 </div>
-                <a href="./pg/adb.html" style="text-decoration: none;">
-                    <button class="start-btn">Start Quiz</button>
+                <a href="./pg/adb.html">
+                    <button class="start-btn">Start Quiz <span>→</span></button>
                 </a>
-            </div>
+            </article>
 
             <!-- Meter And Rhyme Card -->
-            <div class="card">
+            <article class="card">
                 <div class="subject-icon">🎵</div>
                 <h2>Meter And Rhyme</h2>
                 <div class="info-row">
-                    <span class="info-icon">❓</span>
-                    <span class="label">Total Questions:</span>
+                    <div class="info-left">
+                        <span class="info-icon">❓</span>
+                        <span>Total Questions</span>
+                    </div>
                     <span class="value">50</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-icon">🎯</span>
-                    <span class="label">Total Marks:</span>
+                    <div class="info-left">
+                        <span class="info-icon">🎯</span>
+                        <span>Total Marks</span>
+                    </div>
                     <span class="value">50</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-icon">⏱️</span>
-                    <span class="label">Duration:</span>
+                    <div class="info-left">
+                        <span class="info-icon">⏱️</span>
+                        <span>Duration</span>
+                    </div>
                     <span class="value">1 hour</span>
                 </div>
-                <a href="quiz.html" style="text-decoration: none;">
-                    <button class="start-btn">Start Quiz</button>
+                <a href="quiz.html">
+                    <button class="start-btn">Start Quiz <span>→</span></button>
                 </a>
-            </div>
+            </article>
 
             <!-- Research Methodology Card -->
-            <div class="card">
+            <article class="card">
                 <div class="subject-icon">🔬</div>
                 <h2>Research Methodology</h2>
                 <div class="info-row">
-                    <span class="info-icon">❓</span>
-                    <span class="label">Total Questions:</span>
+                    <div class="info-left">
+                        <span class="info-icon">❓</span>
+                        <span>Total Questions</span>
+                    </div>
                     <span class="value">80</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-icon">🎯</span>
-                    <span class="label">Total Marks:</span>
+                    <div class="info-left">
+                        <span class="info-icon">🎯</span>
+                        <span>Total Marks</span>
+                    </div>
                     <span class="value">100</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-icon">⏱️</span>
-                    <span class="label">Duration:</span>
+                    <div class="info-left">
+                        <span class="info-icon">⏱️</span>
+                        <span>Duration</span>
+                    </div>
                     <span class="value">3 hours</span>
                 </div>
-                <button class="start-btn" disabled style="opacity: 0.6; cursor: not-allowed;">Coming Soon</button>
-            </div>
-            
+                <button class="start-btn disabled" disabled>Coming Soon</button>
+            </article>
+
             <!-- Thareehul Fiqh Card -->
-            <div class="card">
+            <article class="card">
                 <div class="subject-icon">📖</div>
                 <h2>Thareehul Fiqh</h2>
                 <div class="info-row">
-                    <span class="info-icon">❓</span>
-                    <span class="label">Total Questions:</span>
+                    <div class="info-left">
+                        <span class="info-icon">❓</span>
+                        <span>Total Questions</span>
+                    </div>
                     <span class="value">200</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-icon">🎯</span>
-                    <span class="label">Total Marks:</span>
+                    <div class="info-left">
+                        <span class="info-icon">🎯</span>
+                        <span>Total Marks</span>
+                    </div>
                     <span class="value">100</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-icon">⏱️</span>
-                    <span class="label">Duration:</span>
+                    <div class="info-left">
+                        <span class="info-icon">⏱️</span>
+                        <span>Duration</span>
+                    </div>
                     <span class="value">2 hours</span>
                 </div>
-                <a href="tfqh.html" style="text-decoration: none;">
-                    <button class="start-btn">Start Quiz</button>
+                <a href="tfqh.html">
+                    <button class="start-btn">Start Quiz <span>→</span></button>
                 </a>
-            </div>
-            
+            </article>
+
+            <!-- JLT ARABIC Card -->
+            <article class="card">
+                <div class="subject-icon">🕌</div>
+                <h2>JLT ARABIC</h2>
+                <div class="info-row">
+                    <div class="info-left">
+                        <span class="info-icon">❓</span>
+                        <span>Multi-Topic</span>
+                    </div>
+                    <span class="value">Curated</span>
+                </div>
+                <div class="info-row">
+                    <div class="info-left">
+                        <span class="info-icon">🎯</span>
+                        <span>Excellence</span>
+                    </div>
+                    <span class="value">Advanced</span>
+                </div>
+                <div class="info-row">
+                    <div class="info-left">
+                        <span class="info-icon">⏱️</span>
+                        <span>Duration</span>
+                    </div>
+                    <span class="value">Self-Paced</span>
+                </div>
+                <a href="./pg/jlt.html">
+                    <button class="start-btn">Explore Topics <span>→</span></button>
+                </a>
+            </article>
+
         </div>
-    </div>
+    </main>
 
 </body>
+
 </html>

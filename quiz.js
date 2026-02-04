@@ -16,29 +16,47 @@ function shuffleArray(array) {
 async function fetchQuizData() {
   const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSaajKOiG4ebCh0NkZEeugD6F9xj8WDpBOV3Ow3v01HxGYWDf3u8uWxaLOCvX2Izw4wDPeIi0I8evKw/pub?output=csv";
 
+  if (window.location.protocol === 'file:') {
+    console.warn("Hint: You are running this via file://. Remote fetching may be blocked by your browser's security (CORS) policy. Consider using a local server (like VS Code Live Server).");
+  }
+
   try {
     const response = await fetch(csvUrl);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     const csvText = await response.text();
-    
-    // Parse CSV data
-    const rows = csvText.split("\n").map(row => row.split(",").map(cell => cell.trim())); // Trim whitespace
-    quizData = rows.slice(1).map(row => ({
-      question: row[0],
-      options: row.slice(1, 5), // Get options from columns B to E
-      correct: parseInt(row[5], 10) - 1 // Adjust for 0-based index
-    }));
+
+    // Improved CSV parsing to handle common spreadsheet edge cases
+    const rows = csvText.split(/\r?\n/).filter(row => row.trim() !== "").map(row => {
+      // Simple regex to split by comma but ignore commas inside quotes if they exist
+      return row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
+    });
+
+    if (rows.length < 2) throw new Error("CSV file appeared empty or invalid.");
+
+    quizData = rows.slice(1).map((row, idx) => {
+      if (row.length < 6) {
+        console.warn(`Row ${idx + 2} is missing columns:`, row);
+        return null;
+      }
+      return {
+        question: row[0],
+        options: row.slice(1, 5),
+        correct: parseInt(row[5], 10) - 1
+      };
+    }).filter(q => q !== null && !isNaN(q.correct));
+
+    if (quizData.length === 0) throw new Error("No valid questions parsed from CSV.");
+
     document.getElementById("preloader").style.display = "none";
-
-    // Shuffle the quiz questions before loading them
     quizData = shuffleArray(quizData);
-
-    console.log("Shuffled Quiz Data:", quizData); // Debug log
-    localStorage.setItem("quizData", JSON.stringify(quizData));
+    localStorage.setItem("quizData_meter", JSON.stringify(quizData));
     startTimer();
-    loadQuestion(); // Load the first question
+    loadQuestion();
   } catch (error) {
-    console.error("Error fetching quiz data:", error);
-    alert("Failed to load quiz data. Please check your CSV link.");
+    console.error("Quiz Fetch Error:", error);
+    const preloaderText = document.querySelector("#preloader p");
+    if (preloaderText) preloaderText.innerHTML = `<span style="color: #ef4444">Error: ${error.message}</span><br><small>Check console for details or ensure you're using a local server.</small>`;
+    alert("Failed to load quiz data. This usually happens when opening the file directly (file://) instead of using a server, or if the CSV link is unreachable.");
   }
 }
 
@@ -167,7 +185,7 @@ function showResults() {
   restartBtn.onclick = () => {
     window.location.href = "index.html"; // Redirect to menu page or home page
   };
-  
+
   document.getElementById("result-container").appendChild(restartBtn);
 }
 

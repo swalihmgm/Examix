@@ -1,333 +1,380 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Multi-Subject Quiz</title>
-  <link rel="shortcut icon" href="icon.png" type="image/png">
-  <!-- Import Arabic and English fonts -->
+  <link rel="icon" href="../20241021_114020.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap"
+    rel="stylesheet">
   <style>
+    :root {
+      --primary: #8B5CF6;
+      --primary-dark: #6D28D9;
+      --accent: #06B6D4;
+      --bg-dark: #0F172A;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --glass-shine: rgba(255, 255, 255, 0.05);
+      --success: #10B981;
+      --error: #EF4444;
+    }
+
     * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
 
-        body {
-            font-family: 'Inter', 'Amiri', Arial, sans-serif;
-            background: #5F9EA0;
-            min-height: 100vh;
-            margin: 0;
-            max-width: 414px;
-            margin: 0 auto;
-            position: relative;
-        }
+    body {
+      font-family: 'Inter', 'Amiri', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-image:
+        radial-gradient(circle at 0% 0%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(6, 182, 212, 0.15) 0%, transparent 50%);
+      background-attachment: fixed;
+    }
 
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background: #000000;
-            color: #ffffff;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
-            width: 100%;
-        }
+    /* Animated Background Blobs */
+    .blob {
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      filter: blur(80px);
+      border-radius: 50%;
+      z-index: -1;
+      opacity: 0.15;
+      animation: move 20s infinite alternate;
+    }
 
-        /* Navbar container for larger screens */
-        @media (min-width: 415px) {
-            .navbar {
-                max-width: 414px;
-                margin: 0 auto;
-                border-radius: 0 0 15px 15px;
-            }
-        }
+    .blob-1 {
+      top: -250px;
+      left: -250px;
+      animation-delay: 0s;
+    }
 
-        .navbar img {
-            width: 45px;
-            height: 45px;
-            border-radius: 8px;
-        }
+    .blob-2 {
+      bottom: -250px;
+      right: -250px;
+      animation-delay: -5s;
+    }
 
-        .navbar h2 {
-            font-size: 22px;
-            flex-grow: 1;
-            text-align: center;
-            font-weight: 600;
-            letter-spacing: 1px;
-        }
+    @keyframes move {
+      from {
+        transform: translate(0, 0) scale(1);
+      }
 
-        #nav-icon {
-            width: 45px;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: transform 0.3s ease;
-        }
+      to {
+        transform: translate(100px, 100px) scale(1.1);
+      }
+    }
 
-        #nav-icon:hover {
-            transform: scale(1.1);
-        }
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 5%;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--glass-border);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
 
-        #container {
-            background: #ffffff;
-            margin: 20px;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            overflow: hidden;
-        }
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
-        /* Quiz header for timer and question number */
-        #quiz-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            z-index: 1;
-        }
-        #quiz-container, #result-container {
-            background: #2F4F4F;
-            margin: 20px;
-            padding: 25px;
-            border-radius: 20px;
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
-            color: white;
-            position: relative;
-        }
+    .navbar img {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+    }
 
-        /* Arabic text styling */
-        .arabic-text {
-            font-family: 'Amiri', serif;
-            font-weight: 400;
-            line-height: 1.8;
-            direction: rtl;
-            text-align: right;
-        }
+    .navbar h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(to right, #fff, var(--text-muted));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
 
-        /* English text styling */
-        .english-text {
-            font-family: 'Inter', sans-serif;
-            font-weight: 400;
-            line-height: 1.6;
-            direction: ltr;
-            text-align: left;
-        }
+    #nav-icon {
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      opacity: 0.7;
+    }
 
-        h2 { 
-            text-align: center; 
-            margin-bottom: 25px;
-            font-size: 24px;
-            font-weight: 600;
-            font-family: 'Inter', 'Amiri', sans-serif;
-        }
-        
-        .answer-btn.correct { 
-            background: #4CAF50;
-            color: white;
-            transform: scale(1.02);
-        }
-        
-        .answer-btn.wrong { 
-            background: #f44336;
-            color: white;
-        }
-        
-        #next-btn, #prev-btn {
-            margin: 10px 5px;
-            padding: 12px 24px;
-            background: #000000;
-            color: white;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        #next-btn:hover, #prev-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-            background: #2F4F4F;
-        }
-        
-        .part-btn {
-            margin: 8px;
-            padding: 15px 20px;
-            background: #5F9EA0;
-            color: white;
-            border: none;
-            border-radius: 15px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            font-size: 14px;
-        }
-        
-        .part-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-            background: #2F4F4F;
-        }
-        
-        #prev-btn { float: left; }
-        #next-btn { float: right; }
-        #score { font-weight: bold; }
-        #timer { text-align: right; font-weight: bold; }
+    #container {
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 20px;
+      position: relative;
+    }
 
-        .clearfix::after {
-            content: "";
-            display: table;
-            clear: both;
-        }
+    #subject-selection h2,
+    #part-selection-subject3 h2,
+    #part-selection-subject1 h2,
+    #part-selection-subject2 h2,
+    #learning-container h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 28px;
+      text-align: center;
+      margin-bottom: 30px;
+      color: #fff;
+    }
 
-        .subject-card {
-            background: #5F9EA0;
-            color: white;
-            padding: 25px 20px;
-            border-radius: 20px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-            cursor: pointer;
-            text-align: center;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-        
-        .subject-card:hover { 
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-            background: #2F4F4F;
-        }
+    .subject-page {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
 
-        .subject-page {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        
-        .subject-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-            display: block;
-        }
-        
-        #question-number {
-            font-size: 14px;
-            font-weight: bold;
-            color: #fff;
-            background: #000000;
-            padding: 8px 15px;
-            border-radius: 20px;
-            margin: 0;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        }
+    .subject-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(15px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 30px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-        #timer {
-            font-size: 14px;
-            font-weight: bold;
-            color: #fff;
-            background: #000000;
-            padding: 8px 15px;
-            border-radius: 20px;
-            margin: 0;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        }
-        
-        .part-bottons {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            padding: 20px;
-        }
-        
-        .question {
-            text-align: center;
-            font-size: 18px;
-            font-weight: 600;
-            margin: 25px 0;
-            position: relative;
-            z-index: 1;
-            font-family: 'Inter', 'Amiri', sans-serif;
-        } 
-        
-        .answer-btn {
-            display: block;
-            width: 100%;
-            padding: 15px 20px;
-            margin: 8px 0;
-            background: #2F4F4F;
-            color: white;
-            border: none;
-            border-radius: 15px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            position: relative;
-            z-index: 1;
-            font-family: 'Inter', 'Amiri', sans-serif;
-        }
-        
-        .answer-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-            background: #5F9EA0;
-        }
-        
-        #learning-container {
-            background: #ffffff;
-            margin: 20px;
-            padding: 25px;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-        }
-        
-        #learning-content {
-            max-height: 400px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 15px;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            font-family: 'Inter', 'Amiri', sans-serif;
-        }
-        
-        #learning-content::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        #learning-content::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 3px;
-        }
-        
-        #learning-content::-webkit-scrollbar-thumb {
-            background: #5F9EA0;
-            border-radius: 3px;
-        }
+    .subject-card:hover {
+      transform: translateY(-8px);
+      background: rgba(30, 41, 59, 0.9);
+      border-color: var(--primary);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
 
+    .subject-icon {
+      font-size: 48px;
+      margin-bottom: 15px;
+      display: block;
+    }
+
+    .subject-card div {
+      font-family: 'Amiri', serif;
+      font-size: 18px;
+      line-height: 1.4;
+    }
+
+    .part-bottons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
+
+    .part-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      color: var(--text-main);
+      padding: 15px 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .part-btn:hover {
+      background: var(--primary);
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    #learning-container {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 30px;
+    }
+
+    #learning-content {
+      background: rgba(15, 23, 42, 0.4);
+      padding: 20px;
+      border-radius: 16px;
+      margin-bottom: 25px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .arabic-text {
+      font-family: 'Amiri', serif;
+      font-size: 20px;
+      line-height: 1.8;
+      direction: rtl;
+      text-align: right;
+    }
+
+    .english-text {
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid rgba(139, 92, 246, 0.2);
+      margin: 15px 0;
+    }
+
+    #quiz-container {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 30px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    }
+
+    #quiz-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 25px;
+    }
+
+    #timer,
+    #question-number {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    #question {
+      margin-bottom: 30px;
+      padding: 20px;
+      font-size: 22px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .answer-btn {
+      width: 100%;
+      padding: 18px 20px;
+      margin-bottom: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .answer-btn:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--primary);
+      transform: translateX(4px);
+    }
+
+    .answer-btn.correct {
+      background: rgba(16, 185, 129, 0.2) !important;
+      border-color: var(--success) !important;
+    }
+
+    .answer-btn.wrong {
+      background: rgba(239, 68, 68, 0.2) !important;
+      border-color: var(--error) !important;
+    }
+
+    #next-btn,
+    #prev-btn {
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+
+    #next-btn {
+      background: var(--primary);
+      color: white;
+      float: right;
+    }
+
+    #prev-btn {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+      border: 1px solid var(--glass-border);
+      float: left;
+    }
+
+    #result-container {
+      text-align: center;
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 50px 30px;
+      border: 1px solid var(--glass-border);
+    }
+
+    #score {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-top: 20px;
+    }
+
+    .clearfix::after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+
+    @media (max-width: 600px) {
+      #container {
+        margin: 20px auto;
+        padding: 10px;
+      }
+
+      .subject-page {
+        grid-template-columns: 1fr;
+      }
+
+      .part-bottons {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
   </style>
+
 </head>
+
 <body>
+
+  <!-- Background Decoration -->
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
 
   <!-- Navbar -->
   <div class="navbar">
-    <img src="/pg/20241020_171328.png" alt="Logo"> <!-- Left logo -->
-    <h2>examix</h2>
-    <img id="nav-icon" src="/pg/20241020_171143.png" alt="Menu Icon"> <!-- Right nav icon -->
+    <div class="navbar-brand">
+      <img src="../20241020_171328.png" alt="Logo">
+      <h2>Examix</h2>
+    </div>
+    <img id="nav-icon" src="../20241020_171143.png" alt="Menu">
   </div>
 
   <div id="container">
@@ -350,8 +397,8 @@
       </div>
     </div>
 
-    
-        <!-- Subject 3 Part Page -->
+
+    <!-- Subject 3 Part Page -->
     <div id="part-selection-subject3" style="display: none;">
       <h2>مشاهير الأدباء في العصر الحديث</h2>
       <div class="part-bottons">
@@ -369,10 +416,10 @@
         <button class="part-btn" onclick="startQuiz('part17')">محمود درويش</button>
         <button class="part-btn" onclick="startQuiz('part18')">أبو القاسم الشابي</button>
         <button class="part-btn" onclick="startQuiz('part19')">أحمد شوقي</button>
-        
+
       </div>
     </div>
-    
+
     <!-- Subject 1 Part Page -->
     <div id="part-selection-subject1" style="display: none;">
       <h2>مقومات النهضة وعواملها</h2>
@@ -397,7 +444,7 @@
       <div id="learning-content" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;"></div>
       <button class="part-btn" onclick="beginQuiz()">Start the Quiz</button>
     </div>
-    
+
 
     <!-- Quiz Container -->
     <div class="question" id="quiz-container" style="display: none;">
@@ -426,215 +473,216 @@
 
 
   <script>
-let quizData = [];
-let currentQuestion = 0;
-let score = 0;
-let timeRemaining = 3600;
+    let quizData = [];
+    let currentQuestion = 0;
+    let score = 0;
+    let timeRemaining = 3600;
 
-const csvUrls = {
-        part1: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=0",
-        part2: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=499131029",
-        part3: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=497045516",
-        part4: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=522585307",
-        part5: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=413092225",
-        part6: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=1467671128",
-        part7: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=1074375691",
-        part8: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=710622141",
-        part9: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=359016621",
-        part10: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=853122328",
-        part11: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=320717241",
-        part12: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=1730898423",
-        part13: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=1485835864",
-        part14: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=2146806655",
-        part15: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=936885024",
-        part16: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=1584329259",
-        part17: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=285506033",
-        part18: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=730094281",
-        part19: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=760060719",
-        part20: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=841965673",
-};
+    const csvUrls = {
+      part1: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=0",
+      part2: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=499131029",
+      part3: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=497045516",
+      part4: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=522585307",
+      part5: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=413092225",
+      part6: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=1467671128",
+      part7: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=1074375691",
+      part8: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=710622141",
+      part9: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=359016621",
+      part10: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=853122328",
+      part11: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=320717241",
+      part12: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=1730898423",
+      part13: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=1485835864",
+      part14: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=2146806655",
+      part15: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=936885024",
+      part16: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=1584329259",
+      part17: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=285506033",
+      part18: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=730094281",
+      part19: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=760060719",
+      part20: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=841965673",
+    };
 
-function goToSubject(subject) {
-  document.getElementById("subject-selection").style.display = "none";
-  document.getElementById(`part-selection-${subject}`).style.display = "block";
-}
+    function goToSubject(subject) {
+      document.getElementById("subject-selection").style.display = "none";
+      document.getElementById(`part-selection-${subject}`).style.display = "block";
+    }
 
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
 
-function shuffleOptions(options) {
-  const correctAnswer = options[0];
-  const shuffled = shuffleArray([...options]);
-  const newCorrectIndex = shuffled.indexOf(correctAnswer);
-  return { shuffled, correctIndex: newCorrectIndex };
-}
+    function shuffleOptions(options) {
+      const correctAnswer = options[0];
+      const shuffled = shuffleArray([...options]);
+      const newCorrectIndex = shuffled.indexOf(correctAnswer);
+      return { shuffled, correctIndex: newCorrectIndex };
+    }
 
-async function fetchQuizData(part) {
-  try {
-    const response = await fetch(csvUrls[part]);
-    const csvText = await response.text();
-    const rows = csvText.split("\n").map(row => row.split(",").map(cell => cell.trim()));
-    quizData = rows.slice(1).map(row => {
-      const { shuffled, correctIndex } = shuffleOptions(row.slice(1, 5));
-      return {
-        question: row[0],
-        options: shuffled,
-        correct: correctIndex
-      };
-    });
+    async function fetchQuizData(part) {
+      try {
+        const response = await fetch(csvUrls[part]);
+        const csvText = await response.text();
+        const rows = csvText.split("\n").map(row => row.split(",").map(cell => cell.trim()));
+        quizData = rows.slice(1).map(row => {
+          const { shuffled, correctIndex } = shuffleOptions(row.slice(1, 5));
+          return {
+            question: row[0],
+            options: shuffled,
+            correct: correctIndex
+          };
+        });
 
-    document.getElementById("part-selection-subject1").style.display = "none";
-    document.getElementById("part-selection-subject2").style.display = "none";
-    document.getElementById("part-selection-subject3").style.display = "none";
-    document.getElementById("quiz-container").style.display = "block";
-    startTimer();
-    loadQuestion();
-  } catch (error) {
-    alert("Failed to load quiz data.");
-    console.error(error);
-  }
-}
+        document.getElementById("part-selection-subject1").style.display = "none";
+        document.getElementById("part-selection-subject2").style.display = "none";
+        document.getElementById("part-selection-subject3").style.display = "none";
+        document.getElementById("quiz-container").style.display = "block";
+        startTimer();
+        loadQuestion();
+      } catch (error) {
+        alert("Failed to load quiz data.");
+        console.error(error);
+      }
+    }
 
-let selectedPart = null;
+    let selectedPart = null;
 
-function startQuiz(part) {
-  selectedPart = part;
-  currentQuestion = 0;
-  score = 0;
-  timeRemaining = 3600;
-  fetchLearningData(part); // Show learning material before quiz
-}
+    function startQuiz(part) {
+      selectedPart = part;
+      currentQuestion = 0;
+      score = 0;
+      timeRemaining = 3600;
+      fetchLearningData(part); // Show learning material before quiz
+    }
 
-async function fetchLearningData(part) {
-  try {
-    const response = await fetch(csvUrls[part]);
-    const csvText = await response.text();
-    const rows = csvText.split("\n").map(row => row.split(",").map(cell => cell.trim()));
-    quizData = rows.slice(1).map(row => {
-      const { shuffled, correctIndex } = shuffleOptions(row.slice(1, 5));
-      return {
-        question: row[0],
-        options: shuffled,
-        correct: correctIndex
-      };
-    });
+    async function fetchLearningData(part) {
+      try {
+        const response = await fetch(csvUrls[part]);
+        const csvText = await response.text();
+        const rows = csvText.split("\n").map(row => row.split(",").map(cell => cell.trim()));
+        quizData = rows.slice(1).map(row => {
+          const { shuffled, correctIndex } = shuffleOptions(row.slice(1, 5));
+          return {
+            question: row[0],
+            options: shuffled,
+            correct: correctIndex
+          };
+        });
 
-    document.getElementById("part-selection-subject1").style.display = "none";
-    document.getElementById("part-selection-subject2").style.display = "none";
-    document.getElementById("part-selection-subject3").style.display = "none";
-    document.getElementById("quiz-container").style.display = "none";
-    document.getElementById("result-container").style.display = "none";
-    document.getElementById("learning-container").style.display = "block";
+        document.getElementById("part-selection-subject1").style.display = "none";
+        document.getElementById("part-selection-subject2").style.display = "none";
+        document.getElementById("part-selection-subject3").style.display = "none";
+        document.getElementById("quiz-container").style.display = "none";
+        document.getElementById("result-container").style.display = "none";
+        document.getElementById("learning-container").style.display = "block";
 
-    const learningContent = document.getElementById("learning-content");
-    learningContent.innerHTML = "";
+        const learningContent = document.getElementById("learning-content");
+        learningContent.innerHTML = "";
 
-    quizData.forEach((q, i) => {
-      const originalAnswer = q.options[q.correct]; // Correct answer after shuffling
-      const div = document.createElement("div");
-      
-      // Detect if content is Arabic or English
-      const isArabic = /[\u0600-\u06FF]/.test(q.question);
-      const textClass = isArabic ? 'arabic-text' : 'english-text';
-      
-      div.innerHTML = `
+        quizData.forEach((q, i) => {
+          const originalAnswer = q.options[q.correct]; // Correct answer after shuffling
+          const div = document.createElement("div");
+
+          // Detect if content is Arabic or English
+          const isArabic = /[\u0600-\u06FF]/.test(q.question);
+          const textClass = isArabic ? 'arabic-text' : 'english-text';
+
+          div.innerHTML = `
         <p class="${textClass}"><strong>Q${i + 1}:</strong> ${q.question}</p>
         <p class="${textClass}" style="line-height: 25px;"><strong>Ans:</strong> ${originalAnswer}</p>
         <hr style="color: #9C27B0; margin: 5px;">
       `;
-      learningContent.appendChild(div);
-    });
-  } catch (error) {
-    alert("Failed to load study material.");
-    console.error(error);
-  }
-}
-
-function beginQuiz() {
-  document.getElementById("learning-container").style.display = "none";
-  document.getElementById("quiz-container").style.display = "block";
-  startTimer();
-  loadQuestion();
-}
-
-function startTimer() {
-  const timerElement = document.getElementById("timer");
-  const interval = setInterval(() => {
-    timeRemaining--;
-    const minutes = Math.floor(timeRemaining / 60);
-    const seconds = timeRemaining % 60;
-    timerElement.textContent = `${minutes}m ${seconds}s`;
-    if (timeRemaining <= 0) {
-      clearInterval(interval);
-      showResults();
+          learningContent.appendChild(div);
+        });
+      } catch (error) {
+        alert("Failed to load study material.");
+        console.error(error);
+      }
     }
-  }, 1000);
-}
 
-function loadQuestion() {
-  const questionObj = quizData[currentQuestion];
-  const questionElement = document.getElementById("question");
-  
-  // Detect if content is Arabic or English and apply appropriate styling
-  const isArabic = /[\u0600-\u06FF]/.test(questionObj.question);
-  questionElement.className = isArabic ? 'question arabic-text' : 'question english-text';
-  questionElement.textContent = questionObj.question;
-  
-  document.getElementById("question-number").textContent = `Question ${currentQuestion + 1} of ${quizData.length}`;
-  const buttons = document.querySelectorAll(".answer-btn");
-  buttons.forEach((btn, index) => {
-    // Apply appropriate text styling to answer buttons
-    const isAnswerArabic = /[\u0600-\u06FF]/.test(questionObj.options[index]);
-    btn.className = isAnswerArabic ? 'answer-btn arabic-text' : 'answer-btn english-text';
-    btn.textContent = questionObj.options[index];
-    btn.disabled = false;
-    btn.onclick = () => checkAnswer(btn, index);
-  });
-  document.getElementById("prev-btn").style.display = currentQuestion > 0 ? "inline-block" : "none";
-  document.getElementById("next-btn").style.display = "none";
-}
+    function beginQuiz() {
+      document.getElementById("learning-container").style.display = "none";
+      document.getElementById("quiz-container").style.display = "block";
+      startTimer();
+      loadQuestion();
+    }
 
-function checkAnswer(button, index) {
-  const correct = quizData[currentQuestion].correct;
-  const buttons = document.querySelectorAll(".answer-btn");
-  if (index === correct) {
-    button.classList.add("correct");
-    score++;
-  } else {
-    button.classList.add("wrong");
-    buttons[correct].classList.add("correct");
-  }
-  buttons.forEach(btn => btn.disabled = true);
-  document.getElementById("next-btn").style.display = "inline-block";
-}
+    function startTimer() {
+      const timerElement = document.getElementById("timer");
+      const interval = setInterval(() => {
+        timeRemaining--;
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        timerElement.textContent = `${minutes}m ${seconds}s`;
+        if (timeRemaining <= 0) {
+          clearInterval(interval);
+          showResults();
+        }
+      }, 1000);
+    }
 
-function nextQuestion() {
-  currentQuestion++;
-  if (currentQuestion < quizData.length) {
-    loadQuestion();
-  } else {
-    showResults();
-  }
-}
+    function loadQuestion() {
+      const questionObj = quizData[currentQuestion];
+      const questionElement = document.getElementById("question");
 
-function prevQuestion() {
-  if (currentQuestion > 0) {
-    currentQuestion--;
-    loadQuestion();
-  }
-}
+      // Detect if content is Arabic or English and apply appropriate styling
+      const isArabic = /[\u0600-\u06FF]/.test(questionObj.question);
+      questionElement.className = isArabic ? 'question arabic-text' : 'question english-text';
+      questionElement.textContent = questionObj.question;
 
-function showResults() {
-  document.getElementById("quiz-container").style.display = "none";
-  document.getElementById("result-container").style.display = "block";
-  document.getElementById("score").textContent = `You scored ${score} out of ${quizData.length}`;
-}
-</script>
+      document.getElementById("question-number").textContent = `Question ${currentQuestion + 1} of ${quizData.length}`;
+      const buttons = document.querySelectorAll(".answer-btn");
+      buttons.forEach((btn, index) => {
+        // Apply appropriate text styling to answer buttons
+        const isAnswerArabic = /[\u0600-\u06FF]/.test(questionObj.options[index]);
+        btn.className = isAnswerArabic ? 'answer-btn arabic-text' : 'answer-btn english-text';
+        btn.textContent = questionObj.options[index];
+        btn.disabled = false;
+        btn.onclick = () => checkAnswer(btn, index);
+      });
+      document.getElementById("prev-btn").style.display = currentQuestion > 0 ? "inline-block" : "none";
+      document.getElementById("next-btn").style.display = "none";
+    }
+
+    function checkAnswer(button, index) {
+      const correct = quizData[currentQuestion].correct;
+      const buttons = document.querySelectorAll(".answer-btn");
+      if (index === correct) {
+        button.classList.add("correct");
+        score++;
+      } else {
+        button.classList.add("wrong");
+        buttons[correct].classList.add("correct");
+      }
+      buttons.forEach(btn => btn.disabled = true);
+      document.getElementById("next-btn").style.display = "inline-block";
+    }
+
+    function nextQuestion() {
+      currentQuestion++;
+      if (currentQuestion < quizData.length) {
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function prevQuestion() {
+      if (currentQuestion > 0) {
+        currentQuestion--;
+        loadQuestion();
+      }
+    }
+
+    function showResults() {
+      document.getElementById("quiz-container").style.display = "none";
+      document.getElementById("result-container").style.display = "block";
+      document.getElementById("score").textContent = `You scored ${score} out of ${quizData.length}`;
+    }
+  </script>
 
 </body>
+
 </html>
