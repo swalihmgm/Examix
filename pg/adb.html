@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap"
     rel="stylesheet">
   <style>
     :root {
@@ -34,11 +34,12 @@
     }
 
     body {
-      font-family: 'Inter', 'Amiri', sans-serif;
+      font-family: 'Plus Jakarta Sans', 'Amiri', sans-serif;
       background-color: var(--bg-dark);
       color: var(--text-main);
       min-height: 100vh;
       overflow-x: hidden;
+      line-height: 1.6;
       background-image:
         radial-gradient(circle at 0% 0%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
         radial-gradient(circle at 100% 100%, rgba(6, 182, 212, 0.15) 0%, transparent 50%);
@@ -84,36 +85,55 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 15px 5%;
-      background: rgba(15, 23, 42, 0.8);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      padding: 12px 16px;
+      background: rgba(15, 23, 42, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--glass-border);
       position: sticky;
       top: 0;
       z-index: 1000;
     }
 
+    @media (min-width: 768px) {
+      .navbar {
+        padding: 15px 5%;
+      }
+    }
+
     .navbar-brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .navbar img {
-      width: 40px;
-      height: 40px;
+      width: 32px;
+      height: 32px;
       border-radius: 10px;
+    }
+
+    @media (min-width: 768px) {
+      .navbar img {
+        width: 40px;
+        height: 40px;
+      }
     }
 
     .navbar h2 {
       font-family: 'Outfit', sans-serif;
-      font-size: 24px;
+      font-size: 20px;
       font-weight: 700;
       background: linear-gradient(to right, #fff, var(--text-muted));
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
+    }
+
+    @media (min-width: 768px) {
+      .navbar h2 {
+        font-size: 24px;
+      }
     }
 
     #nav-icon {
@@ -124,10 +144,18 @@
     }
 
     #container {
+      width: 100%;
       max-width: 700px;
-      margin: 40px auto;
-      padding: 20px;
+      margin: 20px auto;
+      padding: 16px;
       position: relative;
+    }
+
+    @media (min-width: 768px) {
+      #container {
+        margin: 40px auto;
+        padding: 20px;
+      }
     }
 
     #subject-selection h2,
@@ -136,16 +164,35 @@
     #part-selection-subject2 h2,
     #learning-container h2 {
       font-family: 'Outfit', sans-serif;
-      font-size: 28px;
+      font-size: 24px;
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 24px;
       color: #fff;
+    }
+
+    @media (min-width: 768px) {
+
+      #subject-selection h2,
+      #part-selection-subject3 h2,
+      #part-selection-subject1 h2,
+      #part-selection-subject2 h2,
+      #learning-container h2 {
+        font-size: 28px;
+        margin-bottom: 30px;
+      }
     }
 
     .subject-page {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    @media (min-width: 768px) {
+      .subject-page {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+      }
     }
 
     .subject-card {
@@ -153,10 +200,16 @@
       backdrop-filter: blur(15px);
       border: 1px solid var(--glass-border);
       border-radius: 20px;
-      padding: 30px 20px;
+      padding: 24px 16px;
       text-align: center;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @media (min-width: 768px) {
+      .subject-card {
+        padding: 30px 20px;
+      }
     }
 
     .subject-card:hover {
@@ -167,15 +220,27 @@
     }
 
     .subject-icon {
-      font-size: 48px;
+      font-size: 40px;
       margin-bottom: 15px;
       display: block;
     }
 
+    @media (min-width: 768px) {
+      .subject-icon {
+        font-size: 48px;
+      }
+    }
+
     .subject-card div {
       font-family: 'Amiri', serif;
-      font-size: 18px;
+      font-size: 17px;
       line-height: 1.4;
+    }
+
+    @media (min-width: 768px) {
+      .subject-card div {
+        font-size: 18px;
+      }
     }
 
     .part-bottons {
@@ -206,8 +271,15 @@
       background: var(--card-bg);
       backdrop-filter: blur(20px);
       border: 1px solid var(--glass-border);
-      border-radius: 24px;
-      padding: 30px;
+      border-radius: 20px;
+      padding: 24px;
+    }
+
+    @media (min-width: 768px) {
+      #learning-container {
+        border-radius: 24px;
+        padding: 30px;
+      }
     }
 
     #learning-content {
@@ -227,7 +299,7 @@
     }
 
     .english-text {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       line-height: 1.6;
     }
 
@@ -241,9 +313,16 @@
       background: var(--card-bg);
       backdrop-filter: blur(20px);
       border: 1px solid var(--glass-border);
-      border-radius: 24px;
-      padding: 30px;
+      border-radius: 20px;
+      padding: 24px;
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    }
+
+    @media (min-width: 768px) {
+      #quiz-container {
+        border-radius: 24px;
+        padding: 30px;
+      }
     }
 
     #quiz-header {
@@ -342,21 +421,6 @@
       content: "";
       display: table;
       clear: both;
-    }
-
-    @media (max-width: 600px) {
-      #container {
-        margin: 20px auto;
-        padding: 10px;
-      }
-
-      .subject-page {
-        grid-template-columns: 1fr;
-      }
-
-      .part-bottons {
-        grid-template-columns: 1fr 1fr;
-      }
     }
   </style>
 

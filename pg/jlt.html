@@ -9,8 +9,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap"
         rel="stylesheet">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
     <style>
         :root {
             --primary: #8B5CF6;
@@ -33,10 +39,11 @@
         }
 
         body {
-            font-family: 'Inter', 'Amiri', sans-serif;
+            font-family: 'Plus Jakarta Sans', 'Amiri', sans-serif;
             background-color: var(--bg-dark);
             color: var(--text-main);
             min-height: 100vh;
+            line-height: 1.6;
             background-image:
                 radial-gradient(circle at 0% 0%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
                 radial-gradient(circle at 100% 100%, rgba(6, 182, 212, 0.15) 0%, transparent 50%);
@@ -76,70 +83,119 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 5%;
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(12px);
+            padding: 12px 16px;
+            background: rgba(15, 23, 42, 0.82);
+            backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--glass-border);
             position: sticky;
             top: 0;
             z-index: 1000;
         }
 
+        @media (min-width: 768px) {
+            .navbar {
+                padding: 15px 5%;
+            }
+        }
+
         .navbar-brand {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             cursor: pointer;
         }
 
         .navbar img {
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             border-radius: 10px;
+        }
+
+        @media (min-width: 768px) {
+            .navbar img {
+                width: 40px;
+                height: 40px;
+            }
         }
 
         .navbar h2 {
             font-family: 'Outfit', sans-serif;
-            font-size: 24px;
+            font-size: 20px;
             background: linear-gradient(to right, #fff, var(--text-muted));
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
+        @media (min-width: 768px) {
+            .navbar h2 {
+                font-size: 24px;
+            }
+        }
+
         #container {
+            width: 100%;
             max-width: 800px;
-            margin: 40px auto;
-            padding: 20px;
+            margin: 20px auto;
+            padding: 16px;
+        }
+
+        @media (min-width: 768px) {
+            #container {
+                margin: 40px auto;
+                padding: 20px;
+            }
         }
 
         .view-title {
             font-family: 'Outfit', sans-serif;
-            font-size: 32px;
+            font-size: 28px;
             text-align: center;
-            margin-bottom: 40px;
-            letter-spacing: -1px;
+            margin-bottom: 30px;
+            letter-spacing: -0.5px;
+        }
+
+        @media (min-width: 768px) {
+            .view-title {
+                font-size: 36px;
+                margin-bottom: 40px;
+                letter-spacing: -1px;
+            }
         }
 
         /* Grid Layouts */
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        @media (min-width: 768px) {
+            .grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 24px;
+            }
         }
 
         .card {
             background: var(--card-bg);
             backdrop-filter: blur(15px);
             border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 30px;
+            border-radius: 20px;
+            padding: 24px;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
+        }
+
+        @media (min-width: 768px) {
+            .card {
+                border-radius: 24px;
+                padding: 30px;
+            }
         }
 
         .card:hover {
@@ -169,7 +225,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
         .primary-btn {
@@ -222,30 +278,52 @@
         /* Quiz View */
         #quiz-view {
             background: var(--card-bg);
-            border-radius: 24px;
-            padding: 40px;
+            border-radius: 20px;
+            padding: 24px;
             border: 1px solid var(--glass-border);
+        }
+
+        @media (min-width: 768px) {
+            #quiz-view {
+                border-radius: 24px;
+                padding: 40px;
+            }
         }
 
         .quiz-header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
         }
 
         .stat-badge {
             background: rgba(255, 255, 255, 0.05);
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-size: 14px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 13px;
             font-weight: 700;
         }
 
+        @media (min-width: 768px) {
+            .stat-badge {
+                padding: 8px 16px;
+                border-radius: 10px;
+                font-size: 14px;
+            }
+        }
+
         #question {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 600;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
+        }
+
+        @media (min-width: 768px) {
+            #question {
+                font-size: 24px;
+                margin-bottom: 30px;
+            }
         }
 
         .answer-btn {
@@ -291,14 +369,27 @@
             font-weight: 600;
         }
 
-        @media (max-width: 600px) {
-            #container {
-                padding: 15px;
-            }
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            margin-top: 15px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+        }
 
-            .grid {
-                grid-template-columns: 1fr;
-            }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .block-count {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -336,9 +427,18 @@
             <button class="mini-btn primary-btn mega-btn" id="mega-quiz-btn">🚀 Start Mega Quiz</button>
         </section>
 
+        <!-- View 2.5: Blocks Selection -->
+        <section id="blocks-view" class="hidden">
+            <div class="back-nav" onclick="showView('subtopics-view')">← Back to Subtopics</div>
+            <h1 class="view-title" id="current-blocks-title">Subtopic Blocks</h1>
+            <div class="grid" id="blocks-grid">
+                <!-- Dynamic Blocks -->
+            </div>
+        </section>
+
         <!-- View 3: Learning Session -->
         <section id="learning-view" class="hidden">
-            <div class="back-nav" onclick="showView('subtopics-view')">← Back to Subtopics</div>
+            <div class="back-nav" id="learning-back-btn">← Back</div>
             <h1 class="view-title" id="current-subtopic-title">Subtopic Name</h1>
             <div id="learning-content"></div>
             <button class="mini-btn primary-btn" style="width:100%" onclick="beginQuiz()">Begin Quiz Mode</button>
@@ -385,18 +485,63 @@
                     { name: "شنفرى", gid: "2086431216" },
                     { name: "عروة بن الورد", gid: "63237584" }
                 ]
+            },
+            "الشعراء المخضرمون": {
+                baseUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSW45If_qzYATnWNk62FuKIgGgUpyw85SkRnkKYGFBJcEKTCzqKf8N62qsigkcHb0-jMkA-xgweWGxo/pub?output=csv",
+                icon: "🖋️",
+                subtopics: [
+                    { name: "حسان بن ثابت", gid: "0" },
+                    { name: "الخنساء", gid: "1254270587" },
+                    { name: "كعب بن زهير", gid: "445085607" },
+                    { name: "الحطيئة", gid: "1863746770" }
+                ]
             }
         };
 
-        let currentQuizData = [];
+        let currentQuizData = []; // Full Subtopic Data
+        let activeBlockData = []; // Partitioned Data
         let currentIdx = 0;
         let currentScore = 0;
         let timerInterval;
         let timeLeft = 0;
 
-        function init() {
+        let userProgress = {};
+        let currentTopicId = ""; // Base ID for subtopic
+        let currentBlockIdx = -1;
+        let currentMainTopic = "";
+
+        async function init() {
             renderMainTopics();
             createLoader();
+            await loadUserProgress();
+        }
+
+        async function loadUserProgress() {
+            const user = auth.currentUser || await new Promise(resolve => {
+                const unsub = auth.onAuthStateChanged(u => { unsub(); resolve(u); });
+            });
+
+            if (user) {
+                const doc = await db.collection('users').doc(user.uid).get();
+                if (doc.exists) {
+                    userProgress = doc.data().progress || {};
+                }
+            }
+        }
+
+        async function saveProgress(topicId, score, total, blockIdx = -1) {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            const key = blockIdx === -1 ? topicId : `${topicId}_block_${blockIdx}`;
+            const existing = userProgress[key] || { highscore: 0, total: total };
+
+            if (score >= existing.highscore) {
+                userProgress[key] = { highscore: score, total: total };
+                await db.collection('users').doc(user.uid).update({
+                    progress: userProgress
+                });
+            }
         }
 
         function createLoader() {
@@ -419,12 +564,39 @@
             grid.innerHTML = '';
             Object.keys(JLT_CONFIG).forEach(name => {
                 const topic = JLT_CONFIG[name];
+
+                // Calculate Overall Progress
+                let totalHigh = 0;
+                let totalPossible = 0;
+                let count = 0;
+
+                topic.subtopics.forEach(sub => {
+                    const subId = `jlt_${name}_${sub.name}`.replace(/\s+/g, '_');
+                    // Check if there are blocks
+                    const blocks = Object.keys(userProgress).filter(k => k.startsWith(subId + "_block_"));
+                    if (blocks.length > 0) {
+                        blocks.forEach(bk => {
+                            totalHigh += userProgress[bk].highscore;
+                            totalPossible += userProgress[bk].total;
+                        });
+                    } else if (userProgress[subId]) {
+                        totalHigh += userProgress[subId].highscore;
+                        totalPossible += userProgress[subId].total;
+                    }
+                });
+
+                const percent = totalPossible > 0 ? Math.round((totalHigh / totalPossible) * 100) : 0;
+
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `
                     <div class="card-icon">${topic.icon}</div>
                     <div class="card-title">${name}</div>
                     <div style="color: var(--text-muted); font-size: 14px;">${topic.subtopics.length} Subtopics</div>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: ${percent}%"></div>
+                    </div>
+                    <div style="font-size: 11px; margin-top: 5px; color: var(--primary)">${percent}% Complete</div>
                 `;
                 card.onclick = () => showSubtopics(name);
                 grid.appendChild(card);
@@ -432,16 +604,47 @@
         }
 
         function showSubtopics(mainTopicName) {
+            currentMainTopic = mainTopicName;
             const topic = JLT_CONFIG[mainTopicName];
             document.getElementById('current-main-topic-title').textContent = mainTopicName;
             const grid = document.getElementById('subtopics-grid');
             grid.innerHTML = '';
 
             topic.subtopics.forEach(sub => {
+                const topicId = `jlt_${mainTopicName}_${sub.name}`.replace(/\s+/g, '_');
+
+                // Calculate Subtopic Progress
+                let subHigh = 0;
+                let subTotal = 0;
+                const blocks = Object.keys(userProgress).filter(k => k.startsWith(topicId + "_block_"));
+
+                if (blocks.length > 0) {
+                    blocks.forEach(bk => {
+                        subHigh += userProgress[bk].highscore;
+                        subTotal += userProgress[bk].total;
+                    });
+                } else if (userProgress[topicId]) {
+                    subHigh += userProgress[topicId].highscore;
+                    subTotal += userProgress[topicId].total;
+                }
+
+                const percent = subTotal > 0 ? Math.round((subHigh / subTotal) * 100) : 0;
+                const isCovered = percent === 100 && subTotal > 0;
+
                 const card = document.createElement('div');
                 card.className = 'card';
-                card.innerHTML = `<div class="card-title">${sub.name}</div>`;
-                card.onclick = () => startSession(topic.baseUrl, sub.gid, sub.name);
+                card.innerHTML = `
+                    <div class="card-title">${sub.name}</div>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: ${percent}%"></div>
+                    </div>
+                     <div style="font-size: 11px; margin-top: 5px; color: var(--text-muted)">${percent}% Mastery</div>
+                    ${isCovered ? '<div style="background: var(--success); color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; margin-top: 10px; font-weight: 800;">TOPIC COVERED ✔</div>' : ''}
+                `;
+                card.onclick = () => {
+                    currentTopicId = topicId;
+                    startSession(topic.baseUrl, sub.gid, sub.name);
+                };
                 grid.appendChild(card);
             });
 
@@ -456,13 +659,58 @@
                 const data = await fetchCSV(url, gid);
                 if (!data || data.length === 0) throw new Error("No data found in this sheet.");
                 currentQuizData = data;
-                renderLearning(data);
-                showView('learning-view');
+
+                if (data.length > 20) {
+                    renderBlocks(data, name);
+                    showView('blocks-view');
+                } else {
+                    currentBlockIdx = -1;
+                    activeBlockData = data;
+                    document.getElementById('learning-back-btn').onclick = () => showView('subtopics-view');
+                    renderLearning(activeBlockData);
+                    showView('learning-view');
+                }
             } catch (e) {
                 console.error("Fetch Error:", e);
                 alert("Failed to load: " + e.message + "\n\nTip: Ensure the Google Sheet is published to web as 'Entire Document'.");
             } finally {
                 showLoading(false);
+            }
+        }
+
+        function renderBlocks(data, subName) {
+            document.getElementById('current-blocks-title').textContent = subName;
+            const grid = document.getElementById('blocks-grid');
+            grid.innerHTML = '';
+
+            const blockSize = 20;
+            const numBlocks = Math.ceil(data.length / blockSize);
+
+            for (let i = 0; i < numBlocks; i++) {
+                const start = i * blockSize;
+                const end = Math.min(start + blockSize, data.length);
+                const blockKey = `${currentTopicId}_block_${i}`;
+                const progress = userProgress[blockKey];
+                const percent = progress ? Math.round((progress.highscore / progress.total) * 100) : 0;
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-title">Block ${i + 1}</div>
+                    <div style="font-size: 13px; color: var(--text-muted)">Questions ${start + 1} - ${end}</div>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: ${percent}%"></div>
+                    </div>
+                    <div style="font-size: 11px; margin-top: 5px; color: var(--primary)">${percent}% Done</div>
+                `;
+                card.onclick = () => {
+                    currentBlockIdx = i;
+                    activeBlockData = data.slice(start, end);
+                    document.getElementById('learning-back-btn').onclick = () => showView('blocks-view');
+                    renderLearning(activeBlockData);
+                    showView('learning-view');
+                };
+                grid.appendChild(card);
             }
         }
 
@@ -541,16 +789,16 @@
             currentScore = 0;
 
             // Initialize user state for each question
-            currentQuizData.forEach(q => {
+            activeBlockData.forEach(q => {
                 q.userGuess = null;
                 q.shuffledOptions = [...q.options];
                 shuffleArray(q.shuffledOptions);
                 q.correctIdx = q.shuffledOptions.indexOf(q.correctText);
             });
 
-            shuffleArray(currentQuizData);
+            shuffleArray(activeBlockData);
             showView('quiz-view');
-            startTimer(currentQuizData.length * 60); // 1 minute per question
+            startTimer(activeBlockData.length * 60); // 1 minute per question
             loadQuestion();
         }
 
@@ -577,15 +825,15 @@
         }
 
         function loadQuestion() {
-            const q = currentQuizData[currentIdx];
+            const q = activeBlockData[currentIdx];
 
-            document.getElementById('question-number').textContent = `Question ${currentIdx + 1}/${currentQuizData.length}`;
+            document.getElementById('question-number').textContent = `Question ${currentIdx + 1}/${activeBlockData.length}`;
             document.getElementById('question').textContent = q.question;
 
             // Nav button visibility
             document.getElementById('prev-btn').style.visibility = currentIdx > 0 ? 'visible' : 'hidden';
             const nextBtn = document.getElementById('next-btn');
-            nextBtn.textContent = (currentIdx === currentQuizData.length - 1) ? 'Finish Quiz' : 'Next Question →';
+            nextBtn.textContent = (currentIdx === activeBlockData.length - 1) ? 'Finish Quiz' : 'Next Question →';
 
             // Only show Next if already answered
             nextBtn.style.visibility = (q.userGuess !== null) ? 'visible' : 'hidden';
@@ -612,7 +860,7 @@
         }
 
         function checkAnswer(btn, idx) {
-            const q = currentQuizData[currentIdx];
+            const q = activeBlockData[currentIdx];
             q.userGuess = idx;
 
             const buttons = document.querySelectorAll('.answer-btn');
@@ -629,7 +877,7 @@
         }
 
         function nextQuestion() {
-            if (currentIdx < currentQuizData.length - 1) {
+            if (currentIdx < activeBlockData.length - 1) {
                 currentIdx++;
                 loadQuestion();
             } else {
@@ -644,14 +892,20 @@
             }
         }
 
-        function finishQuiz() {
+        async function finishQuiz() {
             clearInterval(timerInterval);
-            document.getElementById('final-score').textContent = `${currentScore}/${currentQuizData.length}`;
+            document.getElementById('final-score').textContent = `${currentScore}/${activeBlockData.length}`;
             showView('results-view');
+
+            // Save progress
+            if (currentTopicId) {
+                await saveProgress(currentTopicId, currentScore, activeBlockData.length, currentBlockIdx);
+                loadUserProgress(); // Refresh local tags
+            }
         }
 
         function showView(id) {
-            ['main-topics-view', 'subtopics-view', 'learning-view', 'quiz-view', 'results-view'].forEach(v => {
+            ['main-topics-view', 'subtopics-view', 'blocks-view', 'learning-view', 'quiz-view', 'results-view'].forEach(v => {
                 const el = document.getElementById(v);
                 if (el) el.classList.toggle('hidden', v !== id);
             });
@@ -673,6 +927,7 @@
 
         init();
     </script>
+    <script src="../auth.js"></script>
 </body>
 
 </html>

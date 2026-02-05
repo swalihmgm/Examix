@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examix - Master Your Future</title>
+    <link rel="icon" href="20241021_114020.jpg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8B5CF6;
+            --accent: #06B6D4;
+            --bg-dark: #0F172A;
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-dark);
+            color: white;
+            overflow-x: hidden;
+            line-height: 1.6;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 40%);
+        }
+
+        /* Hero Animation */
+        .blob {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            filter: blur(100px);
+            border-radius: 50%;
+            z-index: -1;
+            opacity: 0.2;
+            animation: float 20s infinite alternate;
+        }
+
+        @keyframes float {
+            from {
+                transform: translate(-10%, -10%) scale(1);
+            }
+
+            to {
+                transform: translate(10%, 10%) scale(1.2);
+            }
+        }
+
+        /* Container */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 80px 20px 40px;
+        }
+
+        @media (min-width: 768px) {
+            .hero {
+                padding: 0 20px;
+            }
+        }
+
+        .logo-container {
+            margin-bottom: 30px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .logo-container img {
+            width: 120px;
+            height: 120px;
+            border-radius: 30px;
+            box-shadow: 0 0 40px rgba(139, 92, 246, 0.4);
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(40px, 8vw, 84px);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            background: linear-gradient(to right, #fff, #94A3B8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .p-text {
+            font-size: 16px;
+            color: #94A3B8;
+            max-width: 700px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        @media (min-width: 768px) {
+            .p-text {
+                font-size: 20px;
+                margin-bottom: 40px;
+            }
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 300px;
+            gap: 15px;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        @media (min-width: 768px) {
+            .btn-group {
+                flex-direction: row;
+                max-width: none;
+                justify-content: center;
+                gap: 20px;
+            }
+        }
+
+        .primary-btn {
+            background: linear-gradient(135deg, var(--primary), #6D28D9);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 16px;
+            text-decoration: none;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+            text-align: center;
+        }
+
+        @media (min-width: 768px) {
+            .primary-btn {
+                padding: 18px 40px;
+                font-size: 18px;
+            }
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.5);
+            filter: brightness(1.1);
+        }
+
+        .secondary-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 16px;
+            text-decoration: none;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        @media (min-width: 768px) {
+            .secondary-btn {
+                padding: 18px 40px;
+                font-size: 18px;
+            }
+        }
+
+        .secondary-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Features Section */
+        .features {
+            padding: 40px 20px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 768px) {
+            .features {
+                padding: 100px 5%;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 30px;
+            }
+        }
+
+        .f-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        @media (min-width: 768px) {
+            .f-card {
+                padding: 40px;
+                border-radius: 24px;
+            }
+        }
+
+        .f-icon {
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .f-icon {
+                font-size: 40px;
+            }
+        }
+
+        .f-card h3 {
+            font-family: 'Outfit', sans-serif;
+            margin-bottom: 15px;
+        }
+
+        .f-card p {
+            font-size: 16px;
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="blob"></div>
+
+    <main class="hero">
+        <div class="logo-container">
+            <img src="20241020_171328.png" alt="Examix Logo">
+        </div>
+        <h1>Elevate Your Learning <br> Beyond Limits</h1>
+        <p class="p-text">A professional quiz platform designed for mastery. Track your progress, earn achievements, and
+            dominate your
+            courses with real-time feedback.</p>
+
+        <div class="btn-group">
+            <a href="auth.html" class="primary-btn">Get Started Free</a>
+            <a href="#courses" class="secondary-btn">Browse Courses</a>
+        </div>
+    </main>
+
+    <section id="courses" class="courses-section">
+        <div class="section-header">
+            <h2 class="section-title">Our Expert Courses</h2>
+            <p class="section-subtitle">Categorized for your academic success</p>
+        </div>
+
+        <div class="course-categories">
+            <button class="cat-btn active" onclick="filterCourses('all', this)">All</button>
+            <button class="cat-btn" onclick="filterCourses('literature', this)">Literature</button>
+            <button class="cat-btn" onclick="filterCourses('theology', this)">Theology</button>
+            <button class="cat-btn" onclick="filterCourses('methodology', this)">Methodology</button>
+        </div>
+
+        <div class="courses-grid" id="courses-grid">
+            <!-- Arabic Literature -->
+            <article class="course-card" data-category="literature">
+                <div class="course-icon">📚</div>
+                <h3>Arabic Literature</h3>
+                <p>Master the depth of classical and modern Arabic literary works.</p>
+                <div class="enroll-badge">Enroll now for free</div>
+                <button class="enroll-btn" onclick="enroll('arabic-lit')">View Details</button>
+            </article>
+
+            <!-- Islamic Studies -->
+            <article class="course-card" data-category="theology">
+                <div class="course-icon">📖</div>
+                <h3>Islamic Studies</h3>
+                <p>Deep dive into Fiqh, Thareeh, and theology foundations.</p>
+                <div class="enroll-badge">Enroll now for free</div>
+                <button class="enroll-btn" onclick="enroll('islamic-studies')">View Details</button>
+            </article>
+
+            <!-- Research Methodology -->
+            <article class="course-card" data-category="methodology">
+                <div class="course-icon">🔬</div>
+                <h3>Research Methodology</h3>
+                <p>Learn the tools and techniques for academic research excellence.</p>
+                <div class="enroll-badge">Enroll now for free</div>
+                <button class="enroll-btn" onclick="enroll('research')">View Details</button>
+            </article>
+
+            <!-- General Arabic -->
+            <article class="course-card" data-category="theology">
+                <div class="course-icon">🌍</div>
+                <h3>General Arabic</h3>
+                <p>Foundational Arabic for all levels of expertise.</p>
+                <div class="enroll-badge">Enroll now for free</div>
+                <button class="enroll-btn" onclick="enroll('general')">View Details</button>
+            </article>
+        </div>
+    </section>
+
+    <style>
+        .courses-section {
+            padding: 60px 20px;
+            background: rgba(15, 23, 42, 0.3);
+        }
+
+        @media (min-width: 768px) {
+            .courses-section {
+                padding: 100px 5%;
+            }
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .section-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+
+        @media (min-width: 768px) {
+            .section-title {
+                font-size: 42px;
+            }
+        }
+
+        .section-subtitle {
+            color: #94A3B8;
+            font-size: 16px;
+        }
+
+        @media (min-width: 768px) {
+            .section-subtitle {
+                font-size: 18px;
+            }
+        }
+
+        .course-categories {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .cat-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: 600;
+        }
+
+        .cat-btn.active,
+        .cat-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .courses-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 768px) {
+            .courses-grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 30px;
+            }
+        }
+
+        .course-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 30px;
+            text-align: center;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .course-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary);
+            background: rgba(30, 41, 59, 0.8);
+        }
+
+        .course-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .course-card h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .course-card p {
+            color: #94A3B8;
+            font-size: 16px;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .enroll-badge {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10B981;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .enroll-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .enroll-btn:hover {
+            filter: brightness(1.1);
+        }
+    </style>
+
+    <script>
+        function filterCourses(category, btn) {
+            const cards = document.querySelectorAll('.course-card');
+            const buttons = document.querySelectorAll('.cat-btn');
+
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            cards.forEach(card => {
+                if (category === 'all' || card.dataset.category === category) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function enroll(courseId) {
+            const user = localStorage.getItem('examix_user');
+            if (!user) {
+                window.location.href = 'auth.html?redirect=' + courseId;
+            } else {
+                window.location.href = 'purchase.html?course=' + courseId;
+            }
+        }
+    </script>
+
+    <div id="features" class="features">
+        <div class="f-card">
+            <div class="f-icon">🎯</div>
+            <h3>Course Focused</h3>
+            <p>Content uniquely tailored to your specific academic path and goals.</p>
+        </div>
+        <div class="f-icon-card f-card">
+            <div class="f-icon">📈</div>
+            <h3>Deep Analytics</h3>
+            <p>Detailed progress tracking with highscores and covered-topic indicators.</p>
+        </div>
+        <div class="f-card">
+            <div class="f-icon">⏱️</div>
+            <h3>Exam Ready</h3>
+            <p>Timed quiz environments developed by experts to match real exam conditions.</p>
+        </div>
+    </div>
+
+    <!-- Auth Gate Script -->
+    <script>
+        // Check if user is already logged in (using localStorage for initial check)
+        const user = localStorage.getItem('examix_user');
+        if (user) {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+
+</html>
