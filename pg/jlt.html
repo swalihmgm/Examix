@@ -16,6 +16,15 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="../auth.js"></script>
+
+    <!-- Auth Gate -->
+    <script>
+        const cachedUser = localStorage.getItem('examix_user');
+        if (!cachedUser && !window.location.hash.includes('debug')) {
+            window.location.href = '../landing.html';
+        }
+    </script>
 
     <style>
         :root {
@@ -391,6 +400,33 @@
             color: var(--text-muted);
             margin-top: 5px;
         }
+
+        .completed-badge {
+            background: var(--success);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            margin-top: 15px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            animation: fadeInScale 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
     </style>
 </head>
 
@@ -417,7 +453,7 @@
 
         <!-- View 2: Subtopics -->
         <section id="subtopics-view" class="hidden">
-            <div class="back-nav" onclick="showView('main-topics-view')">← Back to Main Topics</div>
+            <div class="back-nav" onclick="showMainTopics()">← Back to Main Topics</div>
             <h1 class="view-title" id="current-main-topic-title">Main Topic Name</h1>
 
             <div class="grid" id="subtopics-grid">
@@ -429,7 +465,7 @@
 
         <!-- View 2.5: Blocks Selection -->
         <section id="blocks-view" class="hidden">
-            <div class="back-nav" onclick="showView('subtopics-view')">← Back to Subtopics</div>
+            <div class="back-nav" onclick="showSubtopics(currentMainTopic)">← Back to Subtopics</div>
             <h1 class="view-title" id="current-blocks-title">Subtopic Blocks</h1>
             <div class="grid" id="blocks-grid">
                 <!-- Dynamic Blocks -->
@@ -438,7 +474,10 @@
 
         <!-- View 3: Learning Session -->
         <section id="learning-view" class="hidden">
-            <div class="back-nav" id="learning-back-btn">← Back</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div class="back-nav" id="learning-back-btn" style="margin-bottom: 0;">← Back</div>
+                <div class="stat-badge" id="learning-timer">30:00</div>
+            </div>
             <h1 class="view-title" id="current-subtopic-title">Subtopic Name</h1>
             <div id="learning-content"></div>
             <button class="mini-btn primary-btn" style="width:100%" onclick="beginQuiz()">Begin Quiz Mode</button>
@@ -469,7 +508,13 @@
             <h1 class="view-title">Quiz Completed!</h1>
             <div style="font-size: 48px; font-weight: 800; color: var(--primary); margin: 20px 0;" id="final-score">0/0
             </div>
-            <button class="mini-btn primary-btn" onclick="showView('main-topics-view')">Back to JLT Home</button>
+            <p id="result-message" style="margin-bottom: 30px; color: var(--text-muted);"></p>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button id="result-back-btn" class="mini-btn primary-btn">Go to Blocks</button>
+                <button class="mini-btn"
+                    style="background: rgba(255,b255,255,0.05); border: 1px solid var(--glass-border); color: var(--text-main);"
+                    onclick="showMainTopics()">Home</button>
+            </div>
         </section>
 
     </main>
@@ -495,6 +540,17 @@
                     { name: "كعب بن زهير", gid: "445085607" },
                     { name: "الحطيئة", gid: "1863746770" }
                 ]
+            },
+            "الشعراء الأمويون": {
+                baseUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTooV4wl5JQedA0J6fogA6oLPxqaU6OCY4k9D_g9a3mq1xfj4N9vJvw4I8K7693CUer_BBfTDWpXx6F/pub?output=csv",
+                icon: "🏰",
+                subtopics: [
+                    { name: "عمر بن أبي ربيعة", gid: "0" },
+                    { name: "جميل بن معمر", gid: "340098261" },
+                    { name: "الأخطل", gid: "88499500" },
+                    { name: "الفرزدق", gid: "1496554082" },
+                    { name: "جرير", gid: "439136681" }
+                ]
             }
         };
 
@@ -510,38 +566,175 @@
         let currentBlockIdx = -1;
         let currentMainTopic = "";
 
-        async function init() {
-            renderMainTopics();
-            createLoader();
-            await loadUserProgress();
+        // Normalize Arabic strings for reliable keys (removes diacritics/tashkeel)
+        function normalizeStr(text) {
+            if (!text) return "";
+            return text
+                .normalize("NFD")
+                .replace(/[\u064B-\u0652]/g, "") // remove tashkeel
+                .replace(/\s+/g, '_')           // spaces to under
+                .trim();
         }
 
-        async function loadUserProgress() {
-            const user = auth.currentUser || await new Promise(resolve => {
-                const unsub = auth.onAuthStateChanged(u => { unsub(); resolve(u); });
-            });
-
-            if (user) {
-                const doc = await db.collection('users').doc(user.uid).get();
-                if (doc.exists) {
-                    userProgress = doc.data().progress || {};
-                }
+        async function init() {
+            createLoader();
+            showLoading(true);
+            try {
+                await loadUserProgress();
+                renderMainTopics();
+            } finally {
+                showLoading(false);
             }
         }
 
-        async function saveProgress(topicId, score, total, blockIdx = -1) {
+        async function loadUserProgress() {
+            // First, try to load from localStorage for immediate UI display
+            const cachedProgress = localStorage.getItem('jlt_progress_cache');
+            if (cachedProgress) {
+                userProgress = JSON.parse(cachedProgress);
+            }
+
+            return new Promise(async (resolve) => {
+                const checkUser = async (user) => {
+                    if (user) {
+                        try {
+                            const doc = await db.collection('users').doc(user.uid).get();
+                            if (doc.exists) {
+                                userProgress = doc.data().progress || {};
+                                localStorage.setItem('jlt_progress_cache', JSON.stringify(userProgress));
+                                // Re-render whichever view is active to update progress bars
+                                if (currentMainTopic) showSubtopics(currentMainTopic);
+                                else renderMainTopics();
+                            }
+                        } catch (e) {
+                            console.error("Error loading progress:", e);
+                        }
+                    }
+                    resolve();
+                };
+
+                if (auth.currentUser) {
+                    await checkUser(auth.currentUser);
+                } else {
+                    const unsub = auth.onAuthStateChanged(async (u) => {
+                        unsub();
+                        await checkUser(u);
+                    });
+                }
+            });
+        }
+
+        async function saveProgress(topicId, score, total, blockIdx = -1, subtopicTotal = -1, numBlocks = -1, onComplete = null) {
             const user = auth.currentUser;
             if (!user) return;
 
             const key = blockIdx === -1 ? topicId : `${topicId}_block_${blockIdx}`;
             const existing = userProgress[key] || { highscore: 0, total: total };
 
+            let updated = false;
+            // Update block/topic score
             if (score >= existing.highscore) {
                 userProgress[key] = { highscore: score, total: total };
-                await db.collection('users').doc(user.uid).update({
-                    progress: userProgress
-                });
+                updated = true;
             }
+
+            // Sync total questions if provided
+            if (subtopicTotal > 0) {
+                const totalKey = topicId + "_totalQuests";
+                if (!userProgress[totalKey] || userProgress[totalKey] < subtopicTotal) {
+                    userProgress[totalKey] = subtopicTotal;
+                    updated = true;
+                }
+            }
+
+            // Sync num blocks if provided
+            if (numBlocks > 0) {
+                const blocksKey = topicId + "_numBlocks";
+                if (!userProgress[blocksKey] || userProgress[blocksKey] < numBlocks) {
+                    userProgress[blocksKey] = numBlocks;
+                    updated = true;
+                }
+            }
+
+            if (updated) {
+                // Recalculate global percentage
+                calculateJltGlobalPercent();
+
+                // Update Firestore
+                try {
+                    await db.collection('users').doc(user.uid).set({
+                        progress: userProgress
+                    }, { merge: true });
+
+                    // Also sync with main examix_user storage for the dashboard
+                    const localUser = JSON.parse(localStorage.getItem('examix_user'));
+                    if (localUser) {
+                        localUser.progress = userProgress;
+                        localStorage.setItem('examix_user', JSON.stringify(localUser));
+                    }
+                } catch (e) {
+                    console.error("Failed to save to Firestore:", e);
+                }
+
+                // Call the optional callback if provided
+                if (typeof onComplete === 'function') {
+                    onComplete();
+                } else {
+                    // Auto-refresh the current view if applicable
+                    if (currentView === 'main-topics-view') {
+                        renderMainTopics();
+                    } else if (currentView === 'subtopics-view' && currentMainTopic) {
+                        showSubtopics(currentMainTopic);
+                    } else if (currentView === 'blocks-view' && currentQuizData.length > 0) {
+                        const subName = document.getElementById('current-blocks-title').textContent;
+                        renderBlocks(currentQuizData, subName);
+                    }
+                }
+            }
+        }
+
+        function calculateJltGlobalPercent() {
+            let globalTotalPercent = 0;
+            const mainTopics = Object.keys(JLT_CONFIG);
+
+            mainTopics.forEach(name => {
+                const topic = JLT_CONFIG[name];
+                let totalSubtopicPercent = 0;
+                const subtopicsCount = topic.subtopics.length;
+
+                topic.subtopics.forEach(sub => {
+                    const subId = normalizeStr(`jlt_${name}_${sub.name}`);
+                    let subPercent = 0;
+                    const numBlocks = userProgress[subId + "_numBlocks"] || 0;
+
+                    if (numBlocks > 0) {
+                        let totalBlockPercent = 0;
+                        for (let i = 0; i < numBlocks; i++) {
+                            const blockKey = `${subId}_block_${i}`;
+                            const bp = userProgress[blockKey];
+                            if (bp && bp.total > 0) totalBlockPercent += (bp.highscore / bp.total);
+                        }
+                        subPercent = (totalBlockPercent / numBlocks);
+                    } else {
+                        const subTotal = userProgress[subId + "_totalQuests"] || 0;
+                        if (subTotal > 0) {
+                            const blocks = Object.keys(userProgress).filter(k => k.startsWith(subId + "_block_"));
+                            let highSum = 0;
+                            blocks.forEach(bk => highSum += userProgress[bk].highscore);
+                            subPercent = highSum / subTotal;
+                        } else if (userProgress[subId] && userProgress[subId].total > 0) {
+                            subPercent = userProgress[subId].highscore / userProgress[subId].total;
+                        }
+                    }
+                    totalSubtopicPercent += subPercent;
+                });
+                globalTotalPercent += (totalSubtopicPercent / subtopicsCount);
+            });
+
+            const finalGlobalPercent = Math.round((globalTotalPercent / mainTopics.length) * 100);
+            userProgress['jlt_global_percent'] = finalGlobalPercent;
+            localStorage.setItem('jlt_progress_cache', JSON.stringify(userProgress));
+            return finalGlobalPercent;
         }
 
         function createLoader() {
@@ -562,30 +755,52 @@
         function renderMainTopics() {
             const grid = document.getElementById('main-topics-grid');
             grid.innerHTML = '';
-            Object.keys(JLT_CONFIG).forEach(name => {
+
+            // Re-calculate to ensure latest is used and persisted
+            calculateJltGlobalPercent();
+
+            const mainTopics = Object.keys(JLT_CONFIG);
+            let globalTotalPercent = 0; // Keeping for compatibility or later use if needed
+
+            mainTopics.forEach(name => {
                 const topic = JLT_CONFIG[name];
 
-                // Calculate Overall Progress
-                let totalHigh = 0;
-                let totalPossible = 0;
-                let count = 0;
+                let totalSubtopicPercent = 0;
+                const subtopicsCount = topic.subtopics.length;
 
                 topic.subtopics.forEach(sub => {
-                    const subId = `jlt_${name}_${sub.name}`.replace(/\s+/g, '_');
-                    // Check if there are blocks
-                    const blocks = Object.keys(userProgress).filter(k => k.startsWith(subId + "_block_"));
-                    if (blocks.length > 0) {
-                        blocks.forEach(bk => {
-                            totalHigh += userProgress[bk].highscore;
-                            totalPossible += userProgress[bk].total;
-                        });
-                    } else if (userProgress[subId]) {
-                        totalHigh += userProgress[subId].highscore;
-                        totalPossible += userProgress[subId].total;
+                    const subId = normalizeStr(`jlt_${name}_${sub.name}`);
+
+                    let subPercent = 0;
+                    const numBlocks = userProgress[subId + "_numBlocks"] || 0;
+
+                    if (numBlocks > 0) {
+                        let totalBlockPercent = 0;
+                        for (let i = 0; i < numBlocks; i++) {
+                            const blockKey = `${subId}_block_${i}`;
+                            const bp = userProgress[blockKey];
+                            if (bp && bp.total > 0) {
+                                totalBlockPercent += (bp.highscore / bp.total);
+                            }
+                        }
+                        subPercent = (totalBlockPercent / numBlocks);
+                    } else {
+                        const subTotal = userProgress[subId + "_totalQuests"] || 0;
+                        if (subTotal > 0) {
+                            const blocks = Object.keys(userProgress).filter(k => k.startsWith(subId + "_block_"));
+                            let highSum = 0;
+                            blocks.forEach(bk => highSum += userProgress[bk].highscore);
+                            subPercent = highSum / subTotal;
+                        } else if (userProgress[subId] && userProgress[subId].total > 0) {
+                            subPercent = userProgress[subId].highscore / userProgress[subId].total;
+                        }
                     }
+                    totalSubtopicPercent += subPercent;
                 });
 
-                const percent = totalPossible > 0 ? Math.round((totalHigh / totalPossible) * 100) : 0;
+                const percent = Math.round((totalSubtopicPercent / subtopicsCount) * 100);
+                globalTotalPercent += (totalSubtopicPercent / subtopicsCount);
+                const isTopicDone = percent >= 100;
 
                 const card = document.createElement('div');
                 card.className = 'card';
@@ -596,7 +811,8 @@
                     <div class="progress-container">
                         <div class="progress-bar" style="width: ${percent}%"></div>
                     </div>
-                    <div style="font-size: 11px; margin-top: 5px; color: var(--primary)">${percent}% Complete</div>
+                    <div style="font-size: 11px; margin-top: 5px; color: var(--primary)">${percent}% Mastered</div>
+                    ${isTopicDone ? '<div class="completed-badge">TOPIC COMPLETED ✔</div>' : ''}
                 `;
                 card.onclick = () => showSubtopics(name);
                 grid.appendChild(card);
@@ -611,25 +827,44 @@
             grid.innerHTML = '';
 
             topic.subtopics.forEach(sub => {
-                const topicId = `jlt_${mainTopicName}_${sub.name}`.replace(/\s+/g, '_');
+                const topicId = normalizeStr(`jlt_${mainTopicName}_${sub.name}`);
 
-                // Calculate Subtopic Progress
-                let subHigh = 0;
-                let subTotal = 0;
-                const blocks = Object.keys(userProgress).filter(k => k.startsWith(topicId + "_block_"));
+                let subPercent = 0;
+                let displayStr = "";
+                const numBlocks = userProgress[topicId + "_numBlocks"] || 0;
+                const subTotal = userProgress[topicId + "_totalQuests"] || 0;
 
-                if (blocks.length > 0) {
-                    blocks.forEach(bk => {
-                        subHigh += userProgress[bk].highscore;
-                        subTotal += userProgress[bk].total;
-                    });
-                } else if (userProgress[topicId]) {
-                    subHigh += userProgress[topicId].highscore;
-                    subTotal += userProgress[topicId].total;
+                if (numBlocks > 0) {
+                    let totalBlockPercent = 0;
+                    let masteredQuests = 0;
+                    for (let i = 0; i < numBlocks; i++) {
+                        const blockKey = `${topicId}_block_${i}`;
+                        const bp = userProgress[blockKey];
+                        if (bp && bp.total > 0) {
+                            totalBlockPercent += (bp.highscore / bp.total);
+                            masteredQuests += bp.highscore;
+                        }
+                    }
+                    subPercent = (totalBlockPercent / numBlocks);
+                    displayStr = `${masteredQuests}/${subTotal} Questions Mastered`;
+                } else {
+                    const subHigh = 0;
+                    if (subTotal > 0) {
+                        const blocks = Object.keys(userProgress).filter(k => k.startsWith(topicId + "_block_"));
+                        let highSum = 0;
+                        blocks.forEach(bk => highSum += userProgress[bk].highscore);
+                        subPercent = highSum / subTotal;
+                        displayStr = `${highSum}/${subTotal} Questions Mastered`;
+                    } else if (userProgress[topicId] && userProgress[topicId].total > 0) {
+                        subPercent = userProgress[topicId].highscore / userProgress[topicId].total;
+                        displayStr = `${userProgress[topicId].highscore}/${userProgress[topicId].total} Questions Mastered`;
+                    } else {
+                        displayStr = "Not started yet";
+                    }
                 }
 
-                const percent = subTotal > 0 ? Math.round((subHigh / subTotal) * 100) : 0;
-                const isCovered = percent === 100 && subTotal > 0;
+                const percent = Math.round(subPercent * 100);
+                const isSubtopicDone = percent >= 100;
 
                 const card = document.createElement('div');
                 card.className = 'card';
@@ -638,8 +873,10 @@
                     <div class="progress-container">
                         <div class="progress-bar" style="width: ${percent}%"></div>
                     </div>
-                     <div style="font-size: 11px; margin-top: 5px; color: var(--text-muted)">${percent}% Mastery</div>
-                    ${isCovered ? '<div style="background: var(--success); color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; margin-top: 10px; font-weight: 800;">TOPIC COVERED ✔</div>' : ''}
+                     <div style="font-size: 11px; margin-top: 5px; color: var(--text-muted)">
+                        ${displayStr} (${percent}%)
+                     </div>
+                    ${isSubtopicDone ? '<div class="completed-badge">SUBTOPIC COMPLETED ✔</div>' : ''}
                 `;
                 card.onclick = () => {
                     currentTopicId = topicId;
@@ -660,8 +897,16 @@
                 if (!data || data.length === 0) throw new Error("No data found in this sheet.");
                 currentQuizData = data;
 
-                if (data.length > 20) {
-                    renderBlocks(data, name);
+                const blockSize = 20;
+                const numBlocks = Math.ceil(data.length / blockSize);
+
+                // Sync the total questions and num blocks for this subtopic if not known
+                if (!userProgress[currentTopicId + "_totalQuests"] || !userProgress[currentTopicId + "_numBlocks"]) {
+                    await saveProgress(currentTopicId, 0, 0, -1, data.length, numBlocks);
+                }
+
+                if (data.length > blockSize) {
+                    renderBlocks(data, name, numBlocks);
                     showView('blocks-view');
                 } else {
                     currentBlockIdx = -1;
@@ -678,20 +923,27 @@
             }
         }
 
-        function renderBlocks(data, subName) {
+        function renderBlocks(data, subName, numBlocks) {
             document.getElementById('current-blocks-title').textContent = subName;
             const grid = document.getElementById('blocks-grid');
             grid.innerHTML = '';
 
             const blockSize = 20;
-            const numBlocks = Math.ceil(data.length / blockSize);
+            if (!numBlocks) numBlocks = Math.ceil(data.length / blockSize);
 
             for (let i = 0; i < numBlocks; i++) {
                 const start = i * blockSize;
                 const end = Math.min(start + blockSize, data.length);
                 const blockKey = `${currentTopicId}_block_${i}`;
                 const progress = userProgress[blockKey];
-                const percent = progress ? Math.round((progress.highscore / progress.total) * 100) : 0;
+                let percent = 0;
+                let high = 0;
+                if (progress && progress.total > 0) {
+                    high = progress.highscore || 0;
+                    percent = Math.round((high / progress.total) * 100);
+                }
+                if (percent > 100) percent = 100;
+                const isBlockDone = percent >= 100;
 
                 const card = document.createElement('div');
                 card.className = 'card';
@@ -701,7 +953,8 @@
                     <div class="progress-container">
                         <div class="progress-bar" style="width: ${percent}%"></div>
                     </div>
-                    <div style="font-size: 11px; margin-top: 5px; color: var(--primary)">${percent}% Done</div>
+                    <div style="font-size: 11px; margin-top: 5px; color: var(--primary)">${high}/${end - start} Done (${percent}%)</div>
+                    ${isBlockDone ? '<div class="completed-badge">BLOCK COMPLETED ✔</div>' : ''}
                 `;
                 card.onclick = () => {
                     currentBlockIdx = i;
@@ -726,7 +979,10 @@
 
                 // Shuffle all combined questions and pick exactly 20
                 shuffleArray(allData);
-                currentQuizData = allData.slice(0, 20);
+                activeBlockData = allData.slice(0, 20); // Fix: Set activeBlockData for beginQuiz
+                currentQuizData = activeBlockData;
+                currentBlockIdx = -1; // Indicate it's a mega quiz
+                currentTopicId = ""; // No saving for mega quiz yet
 
                 beginQuiz();
             } catch (e) {
@@ -782,6 +1038,7 @@
                 `;
                 container.appendChild(div);
             });
+            startTimer(30 * 60, true);
         }
 
         function beginQuiz() {
@@ -802,26 +1059,34 @@
             loadQuestion();
         }
 
-        function startTimer(seconds) {
+        function startTimer(seconds, isLearning = false) {
             clearInterval(timerInterval);
             timeLeft = seconds;
-            updateTimerDisplay();
+            const elementId = isLearning ? 'learning-timer' : 'timer';
+            updateTimerDisplay(elementId);
             timerInterval = setInterval(() => {
                 timeLeft--;
-                updateTimerDisplay();
+                updateTimerDisplay(elementId);
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    alert("Time's up!");
-                    finishQuiz();
+                    if (isLearning) {
+                        alert("Learning time is up! Starting quiz mode.");
+                        beginQuiz();
+                    } else {
+                        alert("Time's up!");
+                        finishQuiz();
+                    }
                 }
             }, 1000);
         }
 
-        function updateTimerDisplay() {
+        function updateTimerDisplay(elementId) {
             const m = Math.floor(timeLeft / 60);
             const s = timeLeft % 60;
-            document.getElementById('timer').textContent =
-                `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            const el = document.getElementById(elementId || 'timer');
+            if (el) {
+                el.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            }
         }
 
         function loadQuestion() {
@@ -894,22 +1159,55 @@
 
         async function finishQuiz() {
             clearInterval(timerInterval);
-            document.getElementById('final-score').textContent = `${currentScore}/${activeBlockData.length}`;
+            const total = activeBlockData.length;
+            const scorePercent = Math.round((currentScore / total) * 100);
+
+            document.getElementById('final-score').textContent = `${currentScore}/${total}`;
+            document.getElementById('result-message').textContent = scorePercent >= 80 ? "Excellent work! You've mastered this section." : "Good effort! Keep practicing to improve your score.";
+
+            const backBtn = document.getElementById('result-back-btn');
+            if (currentBlockIdx !== -1) {
+                backBtn.textContent = "Back to Blocks";
+                backBtn.style.display = 'block';
+                backBtn.onclick = () => {
+                    renderBlocks(currentQuizData, document.getElementById('current-subtopic-title').textContent);
+                    showView('blocks-view');
+                };
+            } else {
+                backBtn.textContent = "Back to Subtopics";
+                backBtn.style.display = 'block';
+                backBtn.onclick = () => {
+                    if (currentMainTopic) showSubtopics(currentMainTopic);
+                    else showMainTopics();
+                };
+            }
+
             showView('results-view');
 
             // Save progress
             if (currentTopicId) {
-                await saveProgress(currentTopicId, currentScore, activeBlockData.length, currentBlockIdx);
-                loadUserProgress(); // Refresh local tags
+                const blockSize = 20;
+                const numBlocks = Math.ceil(currentQuizData.length / blockSize);
+                await saveProgress(currentTopicId, currentScore, total, currentBlockIdx, currentQuizData.length, numBlocks);
             }
         }
 
+        let currentView = 'main-topics-view';
         function showView(id) {
+            currentView = id;
+            if (id !== 'learning-view' && id !== 'quiz-view') {
+                clearInterval(timerInterval);
+            }
             ['main-topics-view', 'subtopics-view', 'blocks-view', 'learning-view', 'quiz-view', 'results-view'].forEach(v => {
                 const el = document.getElementById(v);
                 if (el) el.classList.toggle('hidden', v !== id);
             });
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showMainTopics() {
+            renderMainTopics();
+            showView('main-topics-view');
         }
 
         function shuffleArray(arr) {
@@ -927,7 +1225,6 @@
 
         init();
     </script>
-    <script src="../auth.js"></script>
 </body>
 
 </html>

@@ -259,10 +259,36 @@
 
         .card h2 {
             font-family: 'Outfit', sans-serif;
-            font-size: 22px;
-            margin-bottom: 16px;
-            color: #fff;
+            font-size: 1.25rem;
             font-weight: 700;
+            margin-bottom: 1.25rem;
+            color: white;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin: 10px 0 15px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            width: 0%;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .progress-label {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
         }
 
         /* Info Row Styles (Missing) */
@@ -452,6 +478,10 @@
                 <!-- History of Literature Card -->
                 <article class="card" data-course="arabic-lit">
                     <div class="subject-icon">📚</div>
+                    <div class="progress-label" id="mastery-label-arabic-lit">0% Mastery</div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="mastery-bar-arabic-lit"></div>
+                    </div>
                     <h2>History of Literature</h2>
                     <div class="info-row">
                         <div class="info-left">
@@ -482,6 +512,10 @@
                 <!-- Meter And Rhyme Card -->
                 <article class="card" data-course="arabic-lit">
                     <div class="subject-icon">🎵</div>
+                    <div class="progress-label" id="mastery-label-meter">0% Mastery</div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="mastery-bar-meter"></div>
+                    </div>
                     <h2>Meter And Rhyme</h2>
                     <div class="info-row">
                         <div class="info-left">
@@ -540,6 +574,10 @@
                 <!-- Thareehul Fiqh Card -->
                 <article class="card" data-course="islamic-studies">
                     <div class="subject-icon">📖</div>
+                    <div class="progress-label" id="mastery-label-tfqh">0% Mastery</div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="mastery-bar-tfqh"></div>
+                    </div>
                     <h2>Thareehul Fiqh</h2>
                     <div class="info-row">
                         <div class="info-left">
@@ -570,6 +608,10 @@
                 <!-- JLT ARABIC Card -->
                 <article class="card" data-course="general">
                     <div class="subject-icon">🕌</div>
+                    <div class="progress-label" id="mastery-label-jlt">0% Mastery</div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="mastery-bar-jlt"></div>
+                    </div>
                     <h2>JLT ARABIC</h2>
                     <div class="info-row">
                         <div class="info-left">
@@ -793,47 +835,96 @@
         function initDashboard() {
             document.getElementById('welcome-text').textContent = `Welcome, ${currentUser.name.split(' ')[0]}`;
             document.getElementById('user-display').textContent = currentUser.email;
-
-            filterMyQuizzes();
+            renderMyCourses();
         }
 
-        function filterMyQuizzes() {
-            const enrolled = currentUser.enrolledCourses || [];
-            const cards = document.querySelectorAll('.card');
-            let hasCourses = false;
+        function renderMyCourses() {
+            const userCourses = currentUser.enrolledCourses || [];
+            const quizGrid = document.getElementById('quiz-grid');
 
-            cards.forEach(card => {
+            // First, update the visual progress bars
+            updateDashboardProgress();
+
+            let hasVisibleCards = false;
+            document.querySelectorAll('#quiz-grid .card').forEach(card => {
                 const courseId = card.getAttribute('data-course');
-                if (enrolled.includes(courseId)) {
-                    card.classList.remove('hidden');
-                    hasCourses = true;
-                } else {
-                    card.classList.add('hidden');
-                }
+                const isEnrolled = userCourses.includes(courseId);
+                card.classList.toggle('hidden', !isEnrolled);
+                if (isEnrolled) hasVisibleCards = true;
             });
 
-            if (!hasCourses) {
-                const quizGrid = document.getElementById('quiz-grid');
-                if (enrolled.length === 0) {
-                    quizGrid.innerHTML = `
-                        <div style="text-align:center; grid-column: 1/-1; padding: 40px;">
-                            <p style="color:var(--text-muted); margin-bottom:20px;">You haven't enrolled in any courses yet.</p>
-                            <button onclick="switchTab('all')" class="tab-btn active">Browse All Courses</button>
-                        </div>
-                    `;
-                } else {
-                    quizGrid.innerHTML = `
-                        <div style="text-align:center; grid-column: 1/-1; padding: 40px;">
-                            <p style="color:var(--text-muted); margin-bottom:20px;">No quizzes found for your enrolled courses.</p>
-                            <button onclick="switchTab('all')" class="tab-btn active">Browse All Courses</button>
-                        </div>
-                    `;
-                }
+            // If no courses are enrolled, show a helpful message
+            if (!hasVisibleCards) {
+                const emptyMessage = document.createElement('div');
+                emptyMessage.id = 'empty-course-msg';
+                emptyMessage.style = "text-align:center; grid-column: 1/-1; padding: 40px;";
+                emptyMessage.innerHTML = `
+                    <p style="color:var(--text-muted); margin-bottom:20px;">You haven't enrolled in any courses yet.</p>
+                    <button onclick="switchTab('all')" class="tab-btn active" style="margin: 0 auto; display: block;">Browse All Courses</button>
+                `;
+                const existingMsg = document.getElementById('empty-course-msg');
+                if (!existingMsg) quizGrid.appendChild(emptyMessage);
+            } else {
+                const existingMsg = document.getElementById('empty-course-msg');
+                if (existingMsg) existingMsg.remove();
             }
+        }
+
+        function updateDashboardProgress() {
+            const progress = currentUser.progress || {};
+
+            // 1. JLT Progress
+            if (progress['jlt_global_percent'] !== undefined) {
+                const p = progress['jlt_global_percent'];
+                updateBar('jlt', p, 100);
+            } else {
+                let jltHigh = 0;
+                let jltTotal = 0;
+                Object.keys(progress).forEach(key => {
+                    if (key.startsWith('jlt_') && key.includes('_block_')) {
+                        jltHigh += progress[key].highscore || 0;
+                        jltTotal += progress[key].total || 0;
+                    }
+                });
+                updateBar('jlt', jltHigh, jltTotal);
+            }
+
+            // 2. Arabic Lit (ADB)
+            if (progress['adb_global_percent'] !== undefined) {
+                const p = progress['adb_global_percent'];
+                updateBar('arabic-lit', p, 100);
+            } else {
+                let adbHigh = 0;
+                let adbTotal = 0;
+                Object.keys(progress).forEach(key => {
+                    if (key.startsWith('adb_')) {
+                        adbHigh += progress[key].highscore || 0;
+                        adbTotal += progress[key].total || 0;
+                    }
+                });
+                updateBar('arabic-lit', adbHigh, adbTotal);
+            }
+
+            // 3. Meter and Rhyme & TFQH (simple highscore keys)
+            if (progress['meter_highscore']) updateBar('meter', progress['meter_highscore'].highscore, progress['meter_highscore'].total);
+            if (progress['tfqh_highscore']) updateBar('tfqh', progress['tfqh_highscore'].highscore, progress['tfqh_highscore'].total);
+        }
+
+        function updateBar(id, high, total) {
+            const bar = document.getElementById(`mastery-bar-${id}`);
+            const label = document.getElementById(`mastery-label-${id}`);
+            if (!bar || !label) return;
+
+            const percent = (total > 0 && !isNaN(high) && !isNaN(total)) ? Math.round((high / total) * 100) : 0;
+            const safePercent = Math.min(100, Math.max(0, percent)) || 0;
+
+            bar.style.width = safePercent + '%';
+            label.textContent = `${safePercent}% Mastery`;
         }
 
         function renderAllCourses() {
             const grid = document.getElementById('all-courses-grid');
+            if (!grid) return;
             const enrolled = currentUser.enrolledCourses || [];
 
             grid.innerHTML = COURSES.map(course => {
@@ -866,7 +957,7 @@
                 myView.classList.remove('hidden');
                 allView.classList.add('hidden');
                 buttons[0].classList.add('active');
-                filterMyQuizzes(); // Refresh view
+                renderMyCourses();
             } else {
                 myView.classList.add('hidden');
                 allView.classList.remove('hidden');
@@ -876,13 +967,11 @@
 
         async function enrollUser(courseId) {
             if (!currentUser) return;
-
             const enrolled = currentUser.enrolledCourses || [];
             if (!enrolled.includes(courseId)) {
                 enrolled.push(courseId);
                 currentUser.enrolledCourses = enrolled;
 
-                // Update Firestore
                 try {
                     const user = firebase.auth().currentUser;
                     if (user) {
@@ -892,14 +981,13 @@
                     }
                     localStorage.setItem('examix_user', JSON.stringify(currentUser));
                     renderAllCourses();
-                    filterMyQuizzes();
+                    renderMyCourses();
                     switchTab('my');
                 } catch (error) {
                     console.error("Enrollment failed", error);
-                    // Fallback for demo if not logged in via firebase yet
                     localStorage.setItem('examix_user', JSON.stringify(currentUser));
                     renderAllCourses();
-                    filterMyQuizzes();
+                    renderMyCourses();
                     switchTab('my');
                 }
             } else {

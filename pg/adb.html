@@ -6,6 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Multi-Subject Quiz</title>
   <link rel="icon" href="../20241021_114020.jpg">
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="../auth.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -417,10 +422,48 @@
       margin-top: 20px;
     }
 
+    .progress-container {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      margin: 15px 0 5px;
+      overflow: hidden;
+      border: 1px solid var(--glass-border);
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(to right, var(--primary), var(--accent));
+      width: 0%;
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .progress-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .back-btn {
+      cursor: pointer;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+    }
+
     .clearfix::after {
       content: "";
       display: table;
       clear: both;
+    }
+
+    .hidden {
+      display: none !important;
     }
   </style>
 
@@ -504,7 +547,12 @@
 
     <!-- learning page -->
     <div id="learning-container" style="display: none;">
-      <h2>Q & A</h2>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0;">Q & A</h2>
+        <div id="learning-timer"
+          style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); padding: 8px 16px; border-radius: 10px; font-size: 14px; font-weight: 700; color: var(--text-muted);">
+          30:00</div>
+      </div>
       <div id="learning-content" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;"></div>
       <button class="part-btn" onclick="beginQuiz()">Start the Quiz</button>
     </div>
@@ -541,6 +589,85 @@
     let currentQuestion = 0;
     let score = 0;
     let timeRemaining = 3600;
+    let userProgress = {};
+    let activePart = "";
+    let timerInterval;
+
+    async function loadUserProgress() {
+      if (!auth.currentUser) return;
+      const doc = await db.collection('users').doc(auth.currentUser.uid).get();
+      if (doc.exists) {
+        userProgress = doc.data().progress || {};
+        calculateAdbProgress();
+      }
+    }
+
+    async function saveProgress(partId, highscore, total) {
+      if (!auth.currentUser) return;
+      const key = `adb_${partId}`;
+      const existing = userProgress[key] || { highscore: 0, total: total };
+
+      if (highscore >= existing.highscore) {
+        userProgress[key] = { highscore, total };
+        await calculateAdbProgress();
+      }
+    }
+
+    async function calculateAdbProgress() {
+      const subjects = {
+        s1: ['part1', 'part2', 'part3'],
+        s2: ['part4', 'part5', 'part6'],
+        s3: ['part7', 'part8', 'part9', 'part10', 'part11', 'part12', 'part13', 'part14', 'part15', 'part16', 'part17', 'part18', 'part19', 'part20']
+      };
+
+      let totalSubPercent = 0;
+      Object.keys(subjects).forEach(s => {
+        const parts = subjects[s];
+        let partSum = 0;
+        parts.forEach(p => {
+          const kp = `adb_${p}`;
+          if (userProgress[kp] && userProgress[kp].total > 0) {
+            partSum += (userProgress[kp].highscore / userProgress[kp].total);
+          }
+        });
+        totalSubPercent += (partSum / parts.length);
+      });
+
+      const globalPercent = Math.round((totalSubPercent / 3) * 100);
+      userProgress['adb_global_percent'] = globalPercent;
+
+      const localUser = JSON.parse(localStorage.getItem('examix_user'));
+      if (localUser) {
+        localUser.progress = userProgress;
+        localStorage.setItem('examix_user', JSON.stringify(localUser));
+      }
+      if (auth.currentUser) {
+        await db.collection('users').doc(auth.currentUser.uid).set({
+          progress: userProgress
+        }, { merge: true });
+      }
+    }
+
+    const ADB_CONFIG = {
+      subject1: {
+        id: "subject1",
+        name: "مقومات النهضة وعواملها",
+        icon: "🏛️",
+        parts: ["part1", "part2", "part3"]
+      },
+      subject2: {
+        id: "subject2",
+        name: "الشعر في العصر الحديث",
+        icon: "📝",
+        parts: ["part4", "part5", "part6"]
+      },
+      subject3: {
+        id: "subject3",
+        name: "مشاهير الأدباء في العصر الحديث",
+        icon: "👨‍🎓",
+        parts: ["part7", "part8", "part9", "part10", "part11", "part12", "part13", "part14", "part15", "part16", "part17", "part18", "part19", "part20"]
+      }
+    };
 
     const csvUrls = {
       part1: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=0",
@@ -565,9 +692,92 @@
       part20: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZS4b7ckl_90BDHpqQ1nORa-oM1hXYO5IVWC6cMw--oWRXxdUD9RSxHoYIKTbInXSHAZKF08rY-7YR/pub?output=csv&gid=841965673",
     };
 
+    const partNames = {
+      part10: "العقاد",
+      part11: "طه حسين",
+      part12: "ميخائيل نعيمة",
+      part13: "شوقي ضيف",
+      part14: "محمد عبده",
+      part15: "مصطفى لطفى المنفلوطي",
+      part16: "توفيق الحكيم",
+      part17: "محمود درويش",
+      part18: "أبو القاسم الشابي",
+      part19: "أحمد شوقي",
+      part20: "Part 4 (18 to 19)"
+    };
+
+    function renderSubjects() {
+      const grid = document.getElementById('subjects-grid');
+      grid.innerHTML = '';
+      Object.keys(ADB_CONFIG).forEach(key => {
+        const sub = ADB_CONFIG[key];
+        let totalPercent = 0;
+        sub.parts.forEach(p => {
+          const progress = userProgress[`adb_${p}`];
+          if (progress && progress.total > 0) {
+            totalPercent += (progress.highscore / progress.total);
+          }
+        });
+        const percent = Math.round((totalPercent / sub.parts.length) * 100);
+
+        const card = document.createElement('div');
+        card.className = 'subject-card';
+        card.innerHTML = `
+          <span class="subject-icon">${sub.icon}</span>
+          <div style="font-weight:700; margin-bottom:10px;">${sub.name}</div>
+          <div class="progress-container">
+            <div class="progress-bar" style="width: ${percent}%"></div>
+          </div>
+          <div class="progress-text">${percent}% Mastered</div>
+        `;
+        card.onclick = () => renderParts(key);
+        grid.appendChild(card);
+      });
+    }
+
+    function renderParts(subjectKey) {
+      const sub = ADB_CONFIG[subjectKey];
+      document.getElementById('current-subject-title').textContent = sub.name;
+      const grid = document.getElementById('parts-grid');
+      grid.innerHTML = '';
+
+      sub.parts.forEach(p => {
+        const progress = userProgress[`adb_${p}`];
+        let percent = 0;
+        if (progress && progress.total > 0) {
+          percent = Math.round((progress.highscore / progress.total) * 100);
+        }
+        const name = partNames[p] || (p.replace('part', 'Part '));
+
+        const card = document.createElement('div');
+        card.className = 'subject-card';
+        card.style.padding = "20px 15px";
+        card.innerHTML = `
+          <div style="font-weight:700; margin-bottom:10px;">${name}</div>
+          <div class="progress-container">
+            <div class="progress-bar" style="width: ${percent}%"></div>
+          </div>
+          <div class="progress-text">${percent}% Done</div>
+        `;
+        card.onclick = () => startQuiz(p);
+        grid.appendChild(card);
+      });
+
+      document.getElementById('subject-selection').classList.add('hidden');
+      document.getElementById('part-selection').classList.remove('hidden');
+    }
+
+    function showSubjects() {
+      renderSubjects();
+      document.getElementById('subject-selection').classList.remove('hidden');
+      document.getElementById('part-selection').classList.add('hidden');
+      document.getElementById('learning-container').style.display = 'none';
+      document.getElementById('quiz-container').style.display = 'none';
+      document.getElementById('result-container').style.display = 'none';
+    }
+
     function goToSubject(subject) {
-      document.getElementById("subject-selection").style.display = "none";
-      document.getElementById(`part-selection-${subject}`).style.display = "block";
+      renderParts(subject);
     }
 
     function shuffleArray(array) {
@@ -599,9 +809,6 @@
           };
         });
 
-        document.getElementById("part-selection-subject1").style.display = "none";
-        document.getElementById("part-selection-subject2").style.display = "none";
-        document.getElementById("part-selection-subject3").style.display = "none";
         document.getElementById("quiz-container").style.display = "block";
         startTimer();
         loadQuestion();
@@ -611,9 +818,14 @@
       }
     }
 
+    auth.onAuthStateChanged(user => {
+      if (user) loadUserProgress();
+    });
+
     let selectedPart = null;
 
     function startQuiz(part) {
+      activePart = part;
       selectedPart = part;
       currentQuestion = 0;
       score = 0;
@@ -635,9 +847,8 @@
           };
         });
 
-        document.getElementById("part-selection-subject1").style.display = "none";
-        document.getElementById("part-selection-subject2").style.display = "none";
-        document.getElementById("part-selection-subject3").style.display = "none";
+        document.getElementById("subject-selection").classList.add('hidden');
+        document.getElementById("part-selection").classList.add('hidden');
         document.getElementById("quiz-container").style.display = "none";
         document.getElementById("result-container").style.display = "none";
         document.getElementById("learning-container").style.display = "block";
@@ -660,6 +871,7 @@
       `;
           learningContent.appendChild(div);
         });
+        startTimer(30 * 60, true);
       } catch (error) {
         alert("Failed to load study material.");
         console.error(error);
@@ -669,20 +881,35 @@
     function beginQuiz() {
       document.getElementById("learning-container").style.display = "none";
       document.getElementById("quiz-container").style.display = "block";
+      timeRemaining = 3600;
       startTimer();
       loadQuestion();
     }
 
-    function startTimer() {
-      const timerElement = document.getElementById("timer");
-      const interval = setInterval(() => {
-        timeRemaining--;
+    function startTimer(seconds, isLearning = false) {
+      clearInterval(timerInterval);
+      if (seconds) timeRemaining = seconds;
+      const elementId = isLearning ? "learning-timer" : "timer";
+
+      const updateDisplay = () => {
         const minutes = Math.floor(timeRemaining / 60);
-        const seconds = timeRemaining % 60;
-        timerElement.textContent = `${minutes}m ${seconds}s`;
+        const secondsLeft = timeRemaining % 60;
+        const el = document.getElementById(elementId);
+        if (el) el.textContent = `${minutes}m ${secondsLeft}s`;
+      };
+
+      updateDisplay();
+      timerInterval = setInterval(() => {
+        timeRemaining--;
+        updateDisplay();
         if (timeRemaining <= 0) {
-          clearInterval(interval);
-          showResults();
+          clearInterval(timerInterval);
+          if (isLearning) {
+            alert("Learning time is up! Starting quiz mode.");
+            beginQuiz();
+          } else {
+            showResults();
+          }
         }
       }, 1000);
     }
@@ -744,9 +971,32 @@
       document.getElementById("quiz-container").style.display = "none";
       document.getElementById("result-container").style.display = "block";
       document.getElementById("score").textContent = `You scored ${score} out of ${quizData.length}`;
-    }
-  </script>
+      if (activePart) {
+        saveProgress(activePart, score, quizData.length);
+      }
 
+      const btn = document.createElement('button');
+      btn.className = "part-btn";
+      btn.style.marginTop = "20px";
+      btn.textContent = "Back to Parts";
+      btn.onclick = () => {
+        // Find which subject this part belongs to
+        let subKey = "subject3";
+        Object.keys(ADB_CONFIG).forEach(k => {
+          if (ADB_CONFIG[k].parts.includes(activePart)) subKey = k;
+        });
+        renderParts(subKey);
+        document.getElementById('result-container').style.display = 'none';
+      };
+      document.getElementById('result-container').appendChild(btn);
+    }
+
+    // Initial Load
+    auth.onAuthStateChanged(user => {
+      if (user) loadUserProgress().then(() => renderSubjects());
+      else renderSubjects();
+    });
+  </script>
 </body>
 
 </html>
