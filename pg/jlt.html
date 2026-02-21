@@ -17,6 +17,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="../auth.js"></script>
+    <script src="../popups.js"></script>
 
     <!-- Auth Gate -->
     <script>
@@ -491,6 +492,13 @@
             </div>
             <div id="question" class="arabic-text"
                 style="min-height: 80px; display: flex; align-items: center; justify-content: center;"></div>
+            <div id="explanation-container" class="hidden"
+                style="background: rgba(139, 92, 246, 0.1); border-right: 4px solid var(--primary); padding: 15px; margin: 0 0 20px 0; border-radius: 8px; font-size: 15px; color: var(--text-muted); text-align: right; direction: rtl;">
+                <div
+                    style="font-weight: 800; color: var(--primary); margin-bottom: 5px; font-size: 12px; text-transform: uppercase;">
+                    Explanation</div>
+                <div id="explanation-text"></div>
+            </div>
             <div id="options-container">
                 <!-- Dynamic options -->
             </div>
@@ -499,6 +507,10 @@
                 <button class="mini-btn" id="prev-btn" onclick="prevQuestion()"
                     style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: var(--text-muted);">←
                     Previous</button>
+                <button class="mini-btn" id="repeat-btn" onclick="addToRepeat()"
+                    style="background: rgba(139, 92, 246, 0.1); border: 1px solid var(--primary); color: var(--primary); font-size: 12px; padding: 10px 15px;">
+                    🔁 Add to Repeat
+                </button>
                 <button class="mini-btn primary-btn" id="next-btn" onclick="nextQuestion()">Next Question →</button>
             </div>
         </section>
@@ -550,6 +562,19 @@
                     { name: "الأخطل", gid: "88499500" },
                     { name: "الفرزدق", gid: "1496554082" },
                     { name: "جرير", gid: "439136681" }
+                ]
+            },
+            "شعراء العصر العباسي": {
+                baseUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQaIdSJwSrkavi9UOL9rRwjz1jIzloMDLSuGRMgMOrALAxcKVb6-qHCyE8z-vWTsRXbdpE-Rw9li0C-/pub?output=csv",
+                icon: "🏛️",
+                subtopics: [
+                    { name: "بشار بن برد", gid: "0" },
+                    { name: "أبو نواس", gid: "598103542" },
+                    { name: "أبو تمام", gid: "2079304923" },
+                    { name: "البحتري", gid: "1442078046" },
+                    { name: "المتنبي", gid: "1605510683" },
+                    { name: "ابن الرومي", gid: "1166991025" },
+                    { name: "أبي العلاء المعري", gid: "1675565389" }
                 ]
             }
         };
@@ -916,8 +941,8 @@
                     showView('learning-view');
                 }
             } catch (e) {
-                console.error("Fetch Error:", e);
-                alert("Failed to load: " + e.message + "\n\nTip: Ensure the Google Sheet is published to web as 'Entire Document'.");
+                await showPopup("Failed to load: " + e.message + "\n\nTip: Ensure the Google Sheet is published to web as 'Entire Document'.");
+                console.error("Fetch error:", e);
             } finally {
                 showLoading(false);
             }
@@ -965,6 +990,37 @@
                 };
                 grid.appendChild(card);
             }
+
+            // ADD REPEAT CARD
+            const repeatKey = `jlt_repeat_questions_${currentTopicId}`;
+            const repeatQuestions = JSON.parse(localStorage.getItem(repeatKey) || '[]');
+            if (repeatQuestions.length > 0) {
+                const repeatCard = document.createElement('div');
+                repeatCard.className = 'card';
+                repeatCard.style.border = '2px dashed var(--primary)';
+                repeatCard.style.background = 'rgba(139, 92, 246, 0.1)';
+                repeatCard.innerHTML = `
+                    <div class="card-icon">🔁</div>
+                    <div class="card-title">Repeat Session</div>
+                    <div style="font-size: 13px; color: var(--text-muted)">${repeatQuestions.length} Questions Saved</div>
+                    <div style="font-size: 11px; margin-top: 10px; color: var(--primary); font-weight: bold;">PRACTICE MISTAKES</div>
+                `;
+                repeatCard.onclick = () => {
+                    activeBlockData = JSON.parse(localStorage.getItem(repeatKey) || '[]');
+                    currentBlockIdx = -2; // Special index for repeat session
+                    currentTopicId = currentTopicId; // Keep the ID for adding more if needed
+                    document.getElementById('learning-back-btn').onclick = () => showView('blocks-view');
+                    renderLearning(activeBlockData);
+                    showView('learning-view');
+                };
+
+                // Insert between blocks (e.g., after the second block if exists, or at the end)
+                if (grid.children.length >= 2) {
+                    grid.insertBefore(repeatCard, grid.children[2]);
+                } else {
+                    grid.appendChild(repeatCard);
+                }
+            }
         }
 
         async function startMegaQuiz(topic) {
@@ -986,7 +1042,8 @@
 
                 beginQuiz();
             } catch (e) {
-                alert("Mega Quiz Error: " + e.message);
+                await showPopup("Mega Quiz Error: " + e.message);
+                console.error(e);
             } finally {
                 showLoading(false);
             }
@@ -1029,16 +1086,43 @@
         function renderLearning(data) {
             const container = document.getElementById('learning-content');
             container.innerHTML = '';
+            const isRepeat = currentBlockIdx === -2;
+
             data.forEach((q, i) => {
                 const div = document.createElement('div');
+                div.style.position = 'relative';
                 div.innerHTML = `
                     <p class="arabic-text"><strong>${i + 1}.</strong> ${q.question}</p>
                     <p class="arabic-text" style="color: var(--success); margin-top: 5px; font-weight: 700;"><strong>✓</strong> ${q.correctText}</p>
                     ${q.explanation ? `<p class="arabic-text" style="color: var(--text-muted); font-size: 16px; margin-top: 8px; border-right: 3px solid var(--primary); padding-right: 12px; margin-right: 5px;">${q.explanation}</p>` : ''}
+                    ${isRepeat ? `<button onclick="removeFromRepeat(${i})" style="position: absolute; top: 10px; left: 0; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #EF4444; padding: 4px 8px; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: 700;">Remove</button>` : ''}
                 `;
                 container.appendChild(div);
             });
             startTimer(30 * 60, true);
+        }
+
+        async function removeFromRepeat(idx) {
+            const ok = await showPopup("Remove this question from Repeat Session?", "confirm");
+            if (!ok) return;
+
+            const repeatKey = `jlt_repeat_questions_${currentTopicId}`;
+            let repeatQuestions = JSON.parse(localStorage.getItem(repeatKey) || '[]');
+
+            // Remove by matching question text and current index
+            const questionToRemove = activeBlockData[idx].question;
+            const updated = repeatQuestions.filter(q => q.question !== questionToRemove);
+
+            localStorage.setItem(repeatKey, JSON.stringify(updated));
+            activeBlockData = updated;
+
+            if (activeBlockData.length === 0) {
+                await showPopup("Repeat Session is now empty.");
+                showView('blocks-view');
+                renderBlocks(currentQuizData, document.getElementById('current-blocks-title').textContent);
+            } else {
+                renderLearning(activeBlockData);
+            }
         }
 
         function beginQuiz() {
@@ -1070,11 +1154,13 @@
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     if (isLearning) {
-                        alert("Learning time is up! Starting quiz mode.");
-                        beginQuiz();
+                        showPopup("Learning time is up! Starting quiz mode.").then(() => {
+                            beginQuiz();
+                        });
                     } else {
-                        alert("Time's up!");
-                        finishQuiz();
+                        showPopup("Time's up!").then(() => {
+                            finishQuiz();
+                        });
                     }
                 }
             }, 1000);
@@ -1102,6 +1188,14 @@
 
             // Only show Next if already answered
             nextBtn.style.visibility = (q.userGuess !== null) ? 'visible' : 'hidden';
+
+            const explanationContainer = document.getElementById('explanation-container');
+            if (q.userGuess !== null && q.explanation) {
+                document.getElementById('explanation-text').textContent = q.explanation;
+                explanationContainer.classList.remove('hidden');
+            } else {
+                explanationContainer.classList.add('hidden');
+            }
 
             const container = document.getElementById('options-container');
             container.innerHTML = '';
@@ -1138,6 +1232,12 @@
             }
 
             buttons.forEach(b => b.disabled = true);
+
+            if (q.explanation) {
+                document.getElementById('explanation-text').textContent = q.explanation;
+                document.getElementById('explanation-container').classList.remove('hidden');
+            }
+
             document.getElementById('next-btn').style.visibility = 'visible';
         }
 
@@ -1154,6 +1254,39 @@
             if (currentIdx > 0) {
                 currentIdx--;
                 loadQuestion();
+            }
+        }
+
+        function addToRepeat() {
+            const q = activeBlockData[currentIdx];
+            const repeatKey = currentTopicId ? `jlt_repeat_questions_${currentTopicId}` : 'jlt_repeat_questions';
+            let repeatQuestions = JSON.parse(localStorage.getItem(repeatKey) || '[]');
+
+            // Check if already added
+            if (!repeatQuestions.some(item => item.question === q.question)) {
+                // Remove quiz-specific runtime state before saving
+                const questToSave = {
+                    question: q.question,
+                    options: q.options,
+                    correctText: q.correctText,
+                    explanation: q.explanation
+                };
+                repeatQuestions.push(questToSave);
+                localStorage.setItem(repeatKey, JSON.stringify(repeatQuestions));
+
+                const btn = document.getElementById('repeat-btn');
+                btn.textContent = "✅ Added";
+                btn.style.background = "var(--success)";
+                btn.style.color = "white";
+                btn.style.borderColor = "var(--success)";
+                setTimeout(() => {
+                    btn.textContent = "🔁 Add to Repeat";
+                    btn.style.background = "rgba(139, 92, 246, 0.1)";
+                    btn.style.color = "var(--primary)";
+                    btn.style.borderColor = "var(--primary)";
+                }, 1000);
+            } else {
+                showPopup("This question is already in your repeat session.");
             }
         }
 

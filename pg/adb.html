@@ -11,6 +11,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <script src="../auth.js"></script>
+  <script src="../popups.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -565,12 +566,24 @@
         <div id="question-number"></div>
       </div>
       <p style="text-align: center; padding: 25px; font-size: large;" id="question"></p>
+      <div id="explanation-container" class="hidden"
+        style="background: rgba(139, 92, 246, 0.1); border-right: 4px solid var(--primary); padding: 15px; margin: 0 0 20px 0; border-radius: 8px; font-size: 15px; color: var(--text-main); text-align: right; direction: rtl;">
+        <div
+          style="font-weight: 800; color: var(--primary); margin-bottom: 5px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">
+          Explanation</div>
+        <div id="explanation-text" class="arabic-text"></div>
+      </div>
       <button class="answer-btn"></button>
       <button class="answer-btn"></button>
       <button class="answer-btn"></button>
       <button class="answer-btn"></button>
-      <div class="clearfix">
+      <div class="clearfix"
+        style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
         <button id="prev-btn" onclick="prevQuestion()" style="display: none;">Previous</button>
+        <button id="repeat-btn" onclick="addToRepeat()"
+          style="background: rgba(139, 92, 246, 0.1); border: 1px solid var(--primary); color: var(--primary); font-size: 12px; padding: 10px 15px; border-radius: 12px; font-weight: 600; cursor: pointer;">
+          🔁 Add to Repeat
+        </button>
         <button id="next-btn" onclick="nextQuestion()" style="display: none;">Next</button>
       </div>
     </div>
@@ -761,6 +774,25 @@
         `;
         card.onclick = () => startQuiz(p);
         grid.appendChild(card);
+
+        // ADD REPEAT CARD for each part
+        const repeatKey = `adb_repeat_questions_${p}`;
+        const repeatQuestions = JSON.parse(localStorage.getItem(repeatKey) || '[]');
+        if (repeatQuestions.length > 0) {
+          const repeatCard = document.createElement('div');
+          repeatCard.className = 'subject-card';
+          repeatCard.style.border = '2px dashed var(--primary)';
+          repeatCard.style.background = 'rgba(139, 92, 246, 0.1)';
+          repeatCard.innerHTML = `
+              <div class="subject-icon">🔁</div>
+              <div style="font-weight:700; margin-bottom:10px;">Repeat Session for ${name}</div>
+              <div style="font-size: 11px; color: var(--text-muted)">${repeatQuestions.length} Questions Saved</div>
+          `;
+          repeatCard.onclick = () => {
+            renderRepeatLearning(repeatKey);
+          };
+          grid.appendChild(repeatCard);
+        }
       });
 
       document.getElementById('subject-selection').classList.add('hidden');
@@ -774,6 +806,54 @@
       document.getElementById('learning-container').style.display = 'none';
       document.getElementById('quiz-container').style.display = 'none';
       document.getElementById('result-container').style.display = 'none';
+    }
+
+    function renderRepeatLearning(repeatKey) {
+      quizData = JSON.parse(localStorage.getItem(repeatKey) || '[]');
+      activePart = repeatKey.replace('adb_repeat_questions_', ''); // Restore the part ID
+      document.getElementById("subject-selection").classList.add('hidden');
+      document.getElementById("part-selection").classList.add('hidden');
+      document.getElementById("learning-container").style.display = "block";
+      const learningContent = document.getElementById("learning-content");
+      learningContent.innerHTML = "";
+
+      quizData.forEach((q, i) => {
+        const originalAnswer = q.options[q.correct];
+        const div = document.createElement("div");
+        div.style.position = 'relative';
+        const isArabic = /[\u0600-\u06FF]/.test(q.question);
+        const textClass = isArabic ? 'arabic-text' : 'english-text';
+        div.innerHTML = `
+          <p class="${textClass}"><strong>Q${i + 1}:</strong> ${q.question}</p>
+          <p class="${textClass}"><strong>Ans:</strong> ${originalAnswer}</p>
+          <button onclick="removeFromRepeatAdb('${repeatKey}', ${i})" style="position: absolute; top: 0; left: 0; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #EF4444; padding: 4px 8px; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: 700;">Remove</button>
+          <hr style="color: #9C27B0; margin: 5px;">
+        `;
+        learningContent.appendChild(div);
+      });
+      startTimer(30 * 60, true);
+    }
+
+    async function removeFromRepeatAdb(repeatKey, idx) {
+      const ok = await showPopup("Remove this question from Repeat Session?", "confirm");
+      if (!ok) return;
+      let repeatQuestions = JSON.parse(localStorage.getItem(repeatKey) || '[]');
+      const questionToRemove = quizData[idx].question;
+      const updated = repeatQuestions.filter(q => q.question !== questionToRemove);
+      localStorage.setItem(repeatKey, JSON.stringify(updated));
+
+      if (updated.length === 0) {
+        await showPopup("Repeat Session is now empty.");
+        // Find which subject this part belongs to to go back to the right view
+        let partId = repeatKey.replace('adb_repeat_questions_', '');
+        let subKey = "subject1";
+        Object.keys(ADB_CONFIG).forEach(k => {
+          if (ADB_CONFIG[k].parts.includes(partId)) subKey = k;
+        });
+        renderParts(subKey);
+      } else {
+        renderRepeatLearning(repeatKey);
+      }
     }
 
     function goToSubject(subject) {
@@ -799,21 +879,29 @@
       try {
         const response = await fetch(csvUrls[part]);
         const csvText = await response.text();
-        const rows = csvText.split("\n").map(row => row.split(",").map(cell => cell.trim()));
+
+        // Use a more robust CSV parser that handles quotes and newlines if possible, 
+        // but keeping it close to existing for safety unless needed.
+        const rows = csvText.split(/\r?\n/).filter(r => r.trim()).map(row => {
+          return row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
+        });
+
         quizData = rows.slice(1).map(row => {
+          if (!row[0]) return null;
           const { shuffled, correctIndex } = shuffleOptions(row.slice(1, 5));
           return {
             question: row[0],
             options: shuffled,
-            correct: correctIndex
+            correct: correctIndex,
+            explanation: row[5] || ""
           };
-        });
+        }).filter(q => q !== null);
 
         document.getElementById("quiz-container").style.display = "block";
         startTimer();
         loadQuestion();
       } catch (error) {
-        alert("Failed to load quiz data.");
+        showPopup("Failed to load quiz data.");
         console.error(error);
       }
     }
@@ -873,7 +961,7 @@
         });
         startTimer(30 * 60, true);
       } catch (error) {
-        alert("Failed to load study material.");
+        showPopup("Failed to load study material.");
         console.error(error);
       }
     }
@@ -905,8 +993,9 @@
         if (timeRemaining <= 0) {
           clearInterval(timerInterval);
           if (isLearning) {
-            alert("Learning time is up! Starting quiz mode.");
-            beginQuiz();
+            showPopup("Learning time is up! Starting quiz mode.").then(() => {
+              beginQuiz();
+            });
           } else {
             showResults();
           }
@@ -933,6 +1022,10 @@
         btn.disabled = false;
         btn.onclick = () => checkAnswer(btn, index);
       });
+
+      // Clear explanation
+      document.getElementById("explanation-container").classList.add("hidden");
+
       document.getElementById("prev-btn").style.display = currentQuestion > 0 ? "inline-block" : "none";
       document.getElementById("next-btn").style.display = "none";
     }
@@ -948,6 +1041,16 @@
         buttons[correct].classList.add("correct");
       }
       buttons.forEach(btn => btn.disabled = true);
+
+      // Show explanation
+      const q = quizData[currentQuestion];
+      if (q.explanation) {
+        const expContainer = document.getElementById("explanation-container");
+        const expText = document.getElementById("explanation-text");
+        expText.textContent = q.explanation;
+        expContainer.classList.remove("hidden");
+      }
+
       document.getElementById("next-btn").style.display = "inline-block";
     }
 
@@ -964,6 +1067,31 @@
       if (currentQuestion > 0) {
         currentQuestion--;
         loadQuestion();
+      }
+    }
+
+    function addToRepeat() {
+      const q = quizData[currentQuestion];
+      const repeatKey = activePart ? `adb_repeat_questions_${activePart}` : 'adb_repeat_questions';
+      let repeatQuestions = JSON.parse(localStorage.getItem(repeatKey) || '[]');
+      if (!repeatQuestions.some(item => item.question === q.question)) {
+        repeatQuestions.push({
+          question: q.question,
+          options: q.options,
+          correct: q.correct
+        });
+        localStorage.setItem(repeatKey, JSON.stringify(repeatQuestions));
+        const btn = document.getElementById('repeat-btn');
+        btn.textContent = "✅ Added";
+        btn.style.background = "var(--success)";
+        btn.style.color = "white";
+        setTimeout(() => {
+          btn.textContent = "🔁 Add to Repeat";
+          btn.style.background = "rgba(139, 92, 246, 0.1)";
+          btn.style.color = "var(--primary)";
+        }, 1000);
+      } else {
+        showPopup("Already added to repeat session.");
       }
     }
 

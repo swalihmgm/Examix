@@ -70,7 +70,7 @@ if (signupForm) {
 
             // Send Verification Email
             await user.sendEmailVerification();
-            alert("Verification email sent! Please check your inbox and verify your email to access all features.");
+            await showPopup("Verification email sent! Please check your inbox and verify your email to access all features.");
 
             // Save local copy for fast access
             localStorage.setItem('examix_user', JSON.stringify({ name, email, enrolledCourses: [] }));
@@ -157,13 +157,13 @@ window.signInWithGoogle = async () => {
 
 // Forgot Password
 window.forgotPassword = async () => {
-    const email = prompt("Please enter your email address for the reset link:");
+    const email = await showPopup("Please enter your email address for the reset link:", "prompt");
     if (!email) return;
     try {
         await auth.sendPasswordResetEmail(email);
-        alert("Reset link sent! Please check your inbox.");
+        await showPopup("Reset link sent! Please check your inbox.");
     } catch (error) {
-        alert(error.message);
+        await showPopup(error.message);
     }
 };
 

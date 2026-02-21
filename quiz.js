@@ -38,11 +38,18 @@ async function fetchQuizData() {
       return {
         question: row[0],
         options: row.slice(1, 5),
-        correct: parseInt(row[5], 10) - 1
+        correct: parseInt(row[5], 10) - 1,
+        explanation: row[6] || "" // Added explanation field
       };
     }).filter(q => q !== null && !isNaN(q.correct));
 
     document.getElementById("preloader").style.display = "none";
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('mode') === 'review') {
+      renderReviewMode();
+      return;
+    }
 
     if (currentQuestion === 0) {
       quizData = shuffleArray(quizData);
@@ -54,6 +61,41 @@ async function fetchQuizData() {
   } catch (error) {
     console.error("Quiz Fetch Error:", error);
   }
+}
+
+function renderReviewMode() {
+  const container = document.getElementById('review-container');
+  const quizContainer = document.querySelector('.quiz');
+  const header = document.getElementById('quiz-header');
+
+  if (quizContainer) quizContainer.style.display = 'none';
+  if (header) header.style.display = 'none';
+  container.style.display = 'block';
+
+  const content = document.getElementById('review-content');
+  const repeatQuestions = JSON.parse(localStorage.getItem('meter_repeat_questions') || '[]');
+
+  if (repeatQuestions.length === 0) {
+    content.innerHTML = '<p style="text-align:center; color:var(--text-muted);">No questions saved yet.</p>';
+    return;
+  }
+
+  content.innerHTML = repeatQuestions.map((q, i) => `
+    <div style="position:relative; padding:15px; border-bottom:1px solid rgba(255,255,255,0.05); margin-bottom:10px;">
+      <p style="font-size:18px; margin-bottom:10px; padding-left:70px;"><strong>${i + 1}.</strong> ${q.question}</p>
+      <p style="color:var(--success); font-weight:700; padding-left:70px;">✓ ${q.options[q.correct]}</p>
+      <button onclick="removeFromRepeatReview(${i})" style="position:absolute; top:15px; left:0; background:rgba(239, 68, 68, 0.1); border:1px solid rgba(239, 68, 68, 0.3); color:#EF4444; padding:4px 8px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:700;">Remove</button>
+    </div>
+  `).join('');
+}
+
+async function removeFromRepeatReview(idx) {
+  const ok = await showPopup("Remove this question from Repeat Session?", "confirm");
+  if (!ok) return;
+  let repeatQuestions = JSON.parse(localStorage.getItem('meter_repeat_questions') || '[]');
+  repeatQuestions.splice(idx, 1);
+  localStorage.setItem('meter_repeat_questions', JSON.stringify(repeatQuestions));
+  renderReviewMode();
 }
 
 function startTimer() {
@@ -88,6 +130,10 @@ function loadQuestion(isPrevious = false) {
   });
 
   questionNumberElement.textContent = `Question ${currentQuestion + 1} of ${quizData.length}`;
+
+  // Hide explanation
+  document.getElementById("explanation-container").classList.add("hidden");
+
   document.getElementById("prev-btn").style.display = currentQuestion > 0 ? "block" : "none";
   document.getElementById("next-btn").style.display = "none";
 }
@@ -103,6 +149,14 @@ function checkAnswer(button, index) {
     allButtons[correctAnswer].classList.add("correct");
   }
   allButtons.forEach(btn => btn.disabled = true);
+
+  // Show explanation
+  const q = quizData[currentQuestion];
+  if (q.explanation) {
+    document.getElementById("explanation-text").textContent = q.explanation;
+    document.getElementById("explanation-container").classList.remove("hidden");
+  }
+
   document.getElementById("next-btn").style.display = "block";
   saveActiveState();
 }
@@ -121,6 +175,30 @@ function prevQuestion() {
   if (currentQuestion > 0) {
     currentQuestion--;
     loadQuestion(true);
+  }
+}
+
+function addToRepeat() {
+  const q = quizData[currentQuestion];
+  let repeatQuestions = JSON.parse(localStorage.getItem('meter_repeat_questions') || '[]');
+  if (!repeatQuestions.some(item => item.question === q.question)) {
+    repeatQuestions.push({
+      question: q.question,
+      options: q.options,
+      correct: q.correct
+    });
+    localStorage.setItem('meter_repeat_questions', JSON.stringify(repeatQuestions));
+    const btn = document.getElementById('repeat-btn');
+    btn.textContent = "✅ Added";
+    btn.style.background = "var(--success)";
+    btn.style.color = "white";
+    setTimeout(() => {
+      btn.textContent = "🔁 Add to Repeat";
+      btn.style.background = "rgba(139, 92, 246, 0.1)";
+      btn.style.color = "var(--primary)";
+    }, 1000);
+  } else {
+    showPopup("Already added to repeat session.");
   }
 }
 

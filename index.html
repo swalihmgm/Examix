@@ -806,6 +806,7 @@
     </div>
     </main>
 
+    <script src="popups.js"></script>
     <script src="auth.js"></script>
     <script>
         const COURSES = [
@@ -868,6 +869,49 @@
                 const existingMsg = document.getElementById('empty-course-msg');
                 if (existingMsg) existingMsg.remove();
             }
+
+            // ADD REPEAT CARDS FOR METER AND TFQH
+            renderModuleRepeatCards();
+        }
+
+        function renderModuleRepeatCards() {
+            const quizGrid = document.getElementById('quiz-grid');
+
+            // 1. Meter Repeat
+            const meterRepeat = JSON.parse(localStorage.getItem('meter_repeat_questions') || '[]');
+            if (meterRepeat.length > 0 && !document.getElementById('meter-repeat-card')) {
+                const card = createRepeatCard('meter', 'Meter & Rhyme', meterRepeat.length, 'quiz.html?mode=review');
+                card.id = 'meter-repeat-card';
+                quizGrid.appendChild(card);
+            }
+
+            // 2. TFQH Repeat
+            const tfqhRepeat = JSON.parse(localStorage.getItem('tfqh_repeat_questions') || '[]');
+            if (tfqhRepeat.length > 0 && !document.getElementById('tfqh-repeat-card')) {
+                const card = createRepeatCard('tfqh', 'Thareehul Fiqh', tfqhRepeat.length, 'tfqh.html?mode=review');
+                card.id = 'tfqh-repeat-card';
+                quizGrid.appendChild(card);
+            }
+        }
+
+        function createRepeatCard(id, name, count, url) {
+            const card = document.createElement('article');
+            card.className = 'card';
+            card.style.border = '2px dashed var(--primary)';
+            card.style.background = 'rgba(139, 92, 246, 0.1)';
+            card.innerHTML = `
+                <div class="subject-icon">🔁</div>
+                <div class="progress-label">${count} Questions Saved</div>
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: 100%; opacity: 0.5;"></div>
+                </div>
+                <h2>${name} Repeat</h2>
+                <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Review your saved questions and master the basics.</div>
+                <a href="${url}">
+                    <button class="start-btn" style="background: var(--primary)">Practice Mistakes <span>→</span></button>
+                </a>
+            `;
+            return card;
         }
 
         function updateDashboardProgress() {
