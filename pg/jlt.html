@@ -1318,7 +1318,7 @@
             showView('results-view');
 
             // Save progress
-            if (currentTopicId) {
+            if (currentTopicId && currentBlockIdx !== -2) {
                 const blockSize = 20;
                 const numBlocks = Math.ceil(currentQuizData.length / blockSize);
                 await saveProgress(currentTopicId, currentScore, total, currentBlockIdx, currentQuizData.length, numBlocks);
