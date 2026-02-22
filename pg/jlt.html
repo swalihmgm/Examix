@@ -1029,6 +1029,8 @@
                 let allData = [];
                 for (const sub of topic.subtopics) {
                     const data = await fetchCSV(topic.baseUrl, sub.gid);
+                    const topicId = normalizeStr(`jlt_${currentMainTopic}_${sub.name}`);
+                    data.forEach(q => q.topicId = topicId);
                     allData = allData.concat(data);
                 }
                 if (allData.length === 0) throw new Error("No data found in any sheet.");
@@ -1115,6 +1117,17 @@
 
             localStorage.setItem(repeatKey, JSON.stringify(updated));
             activeBlockData = updated;
+
+            // Cloud Sync
+            const user = auth.currentUser;
+            if (user) {
+                db.collection('users').doc(user.uid).get().then(doc => {
+                    let repeatMap = {};
+                    if (doc.exists) repeatMap = doc.data().repeatQuestions || {};
+                    repeatMap[repeatKey] = updated;
+                    db.collection('users').doc(user.uid).update({ repeatQuestions: repeatMap });
+                });
+            }
 
             if (activeBlockData.length === 0) {
                 await showPopup("Repeat Session is now empty.");
@@ -1259,7 +1272,8 @@
 
         function addToRepeat() {
             const q = activeBlockData[currentIdx];
-            const repeatKey = currentTopicId ? `jlt_repeat_questions_${currentTopicId}` : 'jlt_repeat_questions';
+            const targetTopicId = q.topicId || currentTopicId;
+            const repeatKey = targetTopicId ? `jlt_repeat_questions_${targetTopicId}` : 'jlt_repeat_questions';
             let repeatQuestions = JSON.parse(localStorage.getItem(repeatKey) || '[]');
 
             // Check if already added
@@ -1273,6 +1287,17 @@
                 };
                 repeatQuestions.push(questToSave);
                 localStorage.setItem(repeatKey, JSON.stringify(repeatQuestions));
+
+                // Cloud Sync
+                const user = auth.currentUser;
+                if (user) {
+                    db.collection('users').doc(user.uid).get().then(doc => {
+                        let repeatMap = {};
+                        if (doc.exists) repeatMap = doc.data().repeatQuestions || {};
+                        repeatMap[repeatKey] = repeatQuestions;
+                        db.collection('users').doc(user.uid).update({ repeatQuestions: repeatMap });
+                    });
+                }
 
                 const btn = document.getElementById('repeat-btn');
                 btn.textContent = "✅ Added";

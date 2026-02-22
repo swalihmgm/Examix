@@ -104,10 +104,19 @@ if (loginForm) {
             const userCredential = await auth.signInWithEmailAndPassword(email, password);
             const user = userCredential.user;
 
-            // Fetch user metadata
+            // Fetch user data
             const doc = await db.collection('users').doc(user.uid).get();
             if (doc.exists) {
-                localStorage.setItem('examix_user', JSON.stringify(doc.data()));
+                const userData = doc.data();
+                localStorage.setItem('examix_user', JSON.stringify(userData));
+
+                // Sync Repeat Questions from Cloud to Local
+                if (userData.repeatQuestions) {
+                    Object.keys(userData.repeatQuestions).forEach(key => {
+                        localStorage.setItem(key, JSON.stringify(userData.repeatQuestions[key]));
+                    });
+                }
+
                 handleAuthRedirect();
             }
         } catch (error) {
@@ -146,7 +155,16 @@ window.signInWithGoogle = async () => {
             doc = { data: () => defaultProfile };
         }
 
-        localStorage.setItem('examix_user', JSON.stringify(doc.data()));
+        const userData = doc.data();
+        localStorage.setItem('examix_user', JSON.stringify(userData));
+
+        // Sync Repeat Questions from Cloud to Local
+        if (userData.repeatQuestions) {
+            Object.keys(userData.repeatQuestions).forEach(key => {
+                localStorage.setItem(key, JSON.stringify(userData.repeatQuestions[key]));
+            });
+        }
+
         handleAuthRedirect();
     } catch (error) {
         showError(error.message);
@@ -172,6 +190,13 @@ window.logout = async () => {
     try {
         await auth.signOut();
         localStorage.removeItem('examix_user');
+
+        // Clear all session specific data
+        Object.keys(localStorage).forEach(key => {
+            if (key.includes('_repeat_questions') || key.startsWith('quiz_') || key.startsWith('quizData_')) {
+                localStorage.removeItem(key);
+            }
+        });
 
         // Determine the redirect path correctly regardless of where we are
         const isSubDir = window.location.pathname.includes('/pg/');

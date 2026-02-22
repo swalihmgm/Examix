@@ -95,6 +95,18 @@ async function removeFromRepeatReview(idx) {
   let repeatQuestions = JSON.parse(localStorage.getItem('meter_repeat_questions') || '[]');
   repeatQuestions.splice(idx, 1);
   localStorage.setItem('meter_repeat_questions', JSON.stringify(repeatQuestions));
+
+  // Cloud Sync
+  const user = auth.currentUser;
+  if (user) {
+    db.collection('users').doc(user.uid).get().then(doc => {
+      let repeatMap = {};
+      if (doc.exists) repeatMap = doc.data().repeatQuestions || {};
+      repeatMap['meter_repeat_questions'] = repeatQuestions;
+      db.collection('users').doc(user.uid).update({ repeatQuestions: repeatMap });
+    });
+  }
+
   renderReviewMode();
 }
 
@@ -188,6 +200,18 @@ function addToRepeat() {
       correct: q.correct
     });
     localStorage.setItem('meter_repeat_questions', JSON.stringify(repeatQuestions));
+
+    // Cloud Sync
+    const user = auth.currentUser;
+    if (user) {
+      db.collection('users').doc(user.uid).get().then(doc => {
+        let repeatMap = {};
+        if (doc.exists) repeatMap = doc.data().repeatQuestions || {};
+        repeatMap['meter_repeat_questions'] = repeatQuestions;
+        db.collection('users').doc(user.uid).update({ repeatQuestions: repeatMap });
+      });
+    }
+
     const btn = document.getElementById('repeat-btn');
     btn.textContent = "✅ Added";
     btn.style.background = "var(--success)";

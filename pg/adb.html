@@ -842,6 +842,16 @@
       const updated = repeatQuestions.filter(q => q.question !== questionToRemove);
       localStorage.setItem(repeatKey, JSON.stringify(updated));
 
+      // Cloud Sync
+      if (auth.currentUser) {
+        db.collection('users').doc(auth.currentUser.uid).get().then(doc => {
+          let repeatMap = {};
+          if (doc.exists) repeatMap = doc.data().repeatQuestions || {};
+          repeatMap[repeatKey] = updated;
+          db.collection('users').doc(auth.currentUser.uid).update({ repeatQuestions: repeatMap });
+        });
+      }
+
       if (updated.length === 0) {
         await showPopup("Repeat Session is now empty.");
         // Find which subject this part belongs to to go back to the right view
@@ -1081,6 +1091,17 @@
           correct: q.correct
         });
         localStorage.setItem(repeatKey, JSON.stringify(repeatQuestions));
+
+        // Cloud Sync
+        if (auth.currentUser) {
+          db.collection('users').doc(auth.currentUser.uid).get().then(doc => {
+            let repeatMap = {};
+            if (doc.exists) repeatMap = doc.data().repeatQuestions || {};
+            repeatMap[repeatKey] = repeatQuestions;
+            db.collection('users').doc(auth.currentUser.uid).update({ repeatQuestions: repeatMap });
+          });
+        }
+
         const btn = document.getElementById('repeat-btn');
         btn.textContent = "✅ Added";
         btn.style.background = "var(--success)";
