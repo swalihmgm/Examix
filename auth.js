@@ -8,7 +8,9 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 const auth = firebase.auth();
 const db = firebase.firestore();
 
@@ -17,8 +19,13 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 // Elements
 const errorMsg = document.getElementById('error-msg');
+let isSigningIn = false;
 
 function showError(text) {
+    if (!errorMsg) {
+        console.error(text);
+        return;
+    }
     if (text.includes('auth/cancelled-popup-request')) {
         console.warn('Popup request cancelled - likely a duplicate click.');
         return;
@@ -38,6 +45,55 @@ function handleAuthRedirect() {
         window.location.href = 'index.html';
     }
 }
+
+// Global Auth State Observer
+auth.onAuthStateChanged(async (user) => {
+    if (user) {
+        // User is signed in, fetch latest data from Firestore
+        try {
+            const doc = await db.collection('users').doc(user.uid).get();
+            if (doc.exists) {
+                const userData = doc.data();
+                localStorage.setItem('examix_user', JSON.stringify(userData));
+
+                // Sync Repeat Questions from Cloud to Local
+                if (userData.repeatQuestions) {
+                    Object.keys(userData.repeatQuestions).forEach(key => {
+                        localStorage.setItem(key, JSON.stringify(userData.repeatQuestions[key]));
+                    });
+                }
+            } else {
+                // If doc doesn't exist, create it (e.g. first time login)
+                const defaultProfile = {
+                    name: user.displayName || 'Learner',
+                    email: user.email,
+                    enrolledCourses: [],
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    progress: {}
+                };
+                await db.collection('users').doc(user.uid).set(defaultProfile);
+                localStorage.setItem('examix_user', JSON.stringify(defaultProfile));
+            }
+
+            // If we are on landing or auth page, go to index
+            if (window.location.pathname.includes('landing.html') || window.location.pathname.includes('auth.html')) {
+                handleAuthRedirect();
+            }
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+        }
+    } else {
+        // User is signed out
+        localStorage.removeItem('examix_user');
+        // If we are on a protected page, redirect to landing
+        const protectedPages = ['index.html', 'quiz.html', 'purchase.html', 'jlt.html', 'adb.html', 'tfqh.html'];
+        const isProtected = protectedPages.some(page => window.location.pathname.includes(page));
+        if (isProtected) {
+            const isSubDir = window.location.pathname.includes('/pg/');
+            window.location.href = isSubDir ? '../landing.html' : 'landing.html';
+        }
+    }
+});
 
 // Signup Logic
 const signupForm = document.getElementById('signup-form');
@@ -59,21 +115,15 @@ if (signupForm) {
             const userCredential = await auth.createUserWithEmailAndPassword(email, password);
             const user = userCredential.user;
 
-            // Save profile metadata to Firestore
-            await db.collection('users').doc(user.uid).set({
-                name: name,
-                email: email,
-                enrolledCourses: [],
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                progress: {}
-            });
+            // Update display name
+            await user.updateProfile({ displayName: name });
 
+            // Profile creation is handled by onAuthStateChanged listener
+            
             // Send Verification Email
             await user.sendEmailVerification();
-            await showPopup("Verification email sent! Please check your inbox and verify your email to access all features.");
+            await showPopup("Account created! A verification email has been sent. Please verify your email to unlock all features.");
 
-            // Save local copy for fast access
-            localStorage.setItem('examix_user', JSON.stringify({ name, email, enrolledCourses: [] }));
             handleAuthRedirect();
         } catch (error) {
             showError(error.message);
@@ -101,24 +151,8 @@ if (loginForm) {
         const password = document.getElementById('login-password').value;
 
         try {
-            const userCredential = await auth.signInWithEmailAndPassword(email, password);
-            const user = userCredential.user;
-
-            // Fetch user data
-            const doc = await db.collection('users').doc(user.uid).get();
-            if (doc.exists) {
-                const userData = doc.data();
-                localStorage.setItem('examix_user', JSON.stringify(userData));
-
-                // Sync Repeat Questions from Cloud to Local
-                if (userData.repeatQuestions) {
-                    Object.keys(userData.repeatQuestions).forEach(key => {
-                        localStorage.setItem(key, JSON.stringify(userData.repeatQuestions[key]));
-                    });
-                }
-
-                handleAuthRedirect();
-            }
+            await auth.signInWithEmailAndPassword(email, password);
+            // Redirection is handled by onAuthStateChanged
         } catch (error) {
             showError(error.message);
         } finally {
@@ -130,42 +164,14 @@ if (loginForm) {
 }
 
 // Google Sign-In Logic
-let isSigningIn = false;
 window.signInWithGoogle = async () => {
     if (isSigningIn) return;
     isSigningIn = true;
 
     const provider = new firebase.auth.GoogleAuthProvider();
     try {
-        const result = await auth.signInWithPopup(provider);
-        const user = result.user;
-
-        // Check if user profile exists in Firestore
-        let doc = await db.collection('users').doc(user.uid).get();
-
-        if (!doc.exists) {
-            const defaultProfile = {
-                name: user.displayName,
-                email: user.email,
-                enrolledCourses: [],
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                progress: {}
-            };
-            await db.collection('users').doc(user.uid).set(defaultProfile);
-            doc = { data: () => defaultProfile };
-        }
-
-        const userData = doc.data();
-        localStorage.setItem('examix_user', JSON.stringify(userData));
-
-        // Sync Repeat Questions from Cloud to Local
-        if (userData.repeatQuestions) {
-            Object.keys(userData.repeatQuestions).forEach(key => {
-                localStorage.setItem(key, JSON.stringify(userData.repeatQuestions[key]));
-            });
-        }
-
-        handleAuthRedirect();
+        await auth.signInWithPopup(provider);
+        // data fetching and redirection is handled by onAuthStateChanged
     } catch (error) {
         showError(error.message);
     } finally {
@@ -198,11 +204,7 @@ window.logout = async () => {
             }
         });
 
-        // Determine the redirect path correctly regardless of where we are
-        const isSubDir = window.location.pathname.includes('/pg/');
-        const redirectPath = isSubDir ? '../landing.html' : 'landing.html';
-
-        window.location.href = redirectPath;
+        // Redirect is handled by onAuthStateChanged
     } catch (error) {
         console.error("Logout failed", error);
     }

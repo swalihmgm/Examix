@@ -12,6 +12,11 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <script src="../auth.js"></script>
   <script src="../popups.js"></script>
+  <script>
+    if (!localStorage.getItem('examix_user') && !window.location.hash.includes('debug')) {
+      document.documentElement.style.display = 'none';
+    }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link

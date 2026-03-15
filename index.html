@@ -19,10 +19,10 @@
 
     <!-- Auth Gate -->
     <script>
-        // Check local storage first for speed
-        const cachedUser = localStorage.getItem('examix_user');
-        if (!cachedUser && !window.location.hash.includes('debug')) {
-            window.location.href = 'landing.html';
+        // Initial check for speed
+        if (!localStorage.getItem('examix_user') && !window.location.hash.includes('debug')) {
+            // Hide body to prevent flash of content
+            document.documentElement.style.display = 'none';
         }
     </script>
     <style>
@@ -817,19 +817,37 @@
         ];
 
         let currentUser = null;
+        let authInitialized = false;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            currentUser = JSON.parse(localStorage.getItem('examix_user'));
-            if (!currentUser) return;
-
-            initDashboard();
-            renderAllCourses();
-
-            // Check for enrollment redirect
-            const urlParams = new URLSearchParams(window.location.search);
-            const enrollId = urlParams.get('enroll');
-            if (enrollId) {
-                enrollUser(enrollId);
+        // Listen for auth state changes to initialize dashboard
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                // Wait for auth.js to sync localStorage
+                // We'll poll briefly or wait for the data
+                let retryCount = 0;
+                const checkData = setInterval(() => {
+                    const data = localStorage.getItem('examix_user');
+                    if (data || retryCount > 20) {
+                        clearInterval(checkData);
+                        currentUser = JSON.parse(data);
+                        if (currentUser) {
+                            initDashboard();
+                            renderAllCourses();
+                            document.documentElement.style.display = 'block';
+                            
+                            // Check for enrollment redirect
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const enrollId = urlParams.get('enroll');
+                            if (enrollId && !authInitialized) {
+                                enrollUser(enrollId);
+                            }
+                            authInitialized = true;
+                        }
+                    }
+                    retryCount++;
+                }, 100);
+            } else {
+                // Handled by auth.js redirect
             }
         });
 
